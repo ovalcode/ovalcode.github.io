@@ -96,6 +96,11 @@ const opCodeDesc =
   var interruptflag = 1;
   var breakflag = 1;
   var cycleCount = 0;
+  var isInterupted = 0;
+    
+    this.triggerInterrupt = function() {
+      isInterupted = 1;
+    }
 
     this.getCycleCount = function() {
       return cycleCount;
@@ -383,6 +388,20 @@ const opCodeDesc =
 
 
   this.step = function () {
+    if ((isInterupted == 1) & (interruptflag == 0)) {
+        var tempVal = pc;
+        isInterupted = 0;
+        Push(tempVal >> 8);
+        Push(tempVal & 0xff);
+        breakflag = 0;
+        Push(getStatusFlagsAsByte());
+        breakflag = 1;
+        interruptflag = 1;
+        tempVal = localMem.readMem(0xffff) * 256;
+        tempVal = tempVal + localMem.readMem(0xfffe);
+        pc = tempVal;
+    }
+
     var opcode = localMem.readMem(pc);
     pc = pc + 1;
     var iLen = instructionLengths[opcode];
