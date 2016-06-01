@@ -1,4 +1,4 @@
-function memory(allDownloadedCallback)
+function memory(allDownloadedCallback, keyboard)
 
 {
   var mainMem = new Uint8Array(65536);
@@ -6,12 +6,19 @@ function memory(allDownloadedCallback)
   var kernalRom = new Uint8Array(8192);
   var charRom = new Uint8Array(4192);
   var outstandingDownloads = 3;
+  var simulateKeypress = false;
+  var keyboardInstance = keyboard;
 
   function downloadCompleted() {
     outstandingDownloads--;
     if (outstandingDownloads == 0)
       allDownloadedCallback();
   }
+
+  this.setSimulateKeypress = function () {
+    simulateKeypress = true;
+  }
+
 
 //------------------------------------------------------------------------
 
@@ -73,6 +80,9 @@ oReqChar.send(null);
       return basicRom[address & 0x1fff];
     else if ((address >= 0xe000) & (address <=0xffff))
       return kernalRom[address & 0x1fff];
+    else if (address == 0xdc01) {
+      return keyboardInstance.getColumnByte(mainMem[0xdc00]);
+    }
     return mainMem[address];
   }
 

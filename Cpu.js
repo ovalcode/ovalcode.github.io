@@ -96,15 +96,16 @@ const opCodeDesc =
   var interruptflag = 1;
   var breakflag = 1;
   var cycleCount = 0;
-  var isInterupted = 0;
-    
-    this.triggerInterrupt = function() {
-      isInterupted = 1;
-    }
+  var interruptOcurred = 0;
 
     this.getCycleCount = function() {
       return cycleCount;
     }
+
+    this.setInterrupt = function () {
+      interruptOcurred = 1;
+    }
+
 
     this.getPc = function () {
       return pc;
@@ -388,11 +389,10 @@ const opCodeDesc =
 
 
   this.step = function () {
-    if ((isInterupted == 1) & (interruptflag == 0)) {
-        var tempVal = pc;
-        isInterupted = 0;
-        Push(tempVal >> 8);
-        Push(tempVal & 0xff);
+    if ((interruptOcurred == 1) & (interruptflag == 0)) {
+        interruptOcurred = 0;
+        Push(pc >> 8);
+        Push(pc & 0xff);
         breakflag = 0;
         Push(getStatusFlagsAsByte());
         breakflag = 1;
