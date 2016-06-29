@@ -6,14 +6,36 @@
     <script src="Cpu.js"></script>
     <script src="Video.js"></script>
     <script src="Keyboard.js"></script>
+    <script src="InterruptController.js"></script>
+    <script src="AlarmManager.js"></script>
+    <script src="Timer.js"></script>
+    <script src="Tape.js"></script>
   </head>
   <body onkeydown="mykeyboard.onkeydown(event)" onkeyup="mykeyboard.onkeyup(event)">
     <h1>6502 Emulator From Scratch</h1>
     <p>This is JavaScript Test</p>
-<canvas id="screen" width="320" height="200">
+<canvas id="screen" width="400" height="284">
 
 </canvas>
 <br/>
+<table>
+  <tr>
+  <td style="background-color:white; -webkit-user-select:none" id="chL">L</td>
+  <td style="background-color:white; -webkit-user-select:none" id="chO">O</td>
+  <td style="background-color:white; -webkit-user-select:none" id="chA">A</td>
+  <td style="background-color:white; -webkit-user-select:none" id="chD">D</td>
+  </tr>
+  <tr>
+  <td style="background-color:white; -webkit-user-select:none" id="chENTER">ENTER</td>
+  <td style="background-color:white; -webkit-user-select:none" id="chSPACE">SPACE</td>
+  </tr>
+</table>
+<br/>
+<input type="file" id="files" name="myfile"/>
+<button onclick="attachTape()">Attach</button>
+</br>
+<button onclick="mymem.togglePlayPresed()">Play</button>
+</br>
 <textarea id="registers" name="reg" rows="1" cols="60"></textarea>
 <br/>
 <textarea id="memory" name="mem" rows="15" cols="60"></textarea>
@@ -30,13 +52,103 @@ Break at: <input type="text" id="breakpoint">
     <script language="JavaScript">
 
       var mykeyboard = new keyboard();
-      var mymem = new memory(postInit,mykeyboard);
-      var mycpu = new cpu(mymem);
 
-      var myvideo = new video(document.getElementById("screen"), mymem);
-      var mytimer;
+      //timer
+      //memory
+
+      //interrupt controller
+//==========================================
+      var chL = document.getElementById('chL');
+      
+    chL.addEventListener('touchstart', function(e){
+        document.getElementById("chL").style.backgroundColor = "#555555";
+        mykeyboard.ontouchdown(76);
+    }, false);
+
+    chL.addEventListener('touchend', function(e){
+        document.getElementById("chL").style.backgroundColor = "white";
+        mykeyboard.ontouchremoved(76);
+    }, false);
+//==========================================
+      var chO = document.getElementById('chO');
+      
+    chO.addEventListener('touchstart', function(e){
+        document.getElementById("chO").style.backgroundColor = "#555555";
+        mykeyboard.ontouchdown(79);
+    }, false);
+
+    chO.addEventListener('touchend', function(e){
+        document.getElementById("chO").style.backgroundColor = "white";
+        mykeyboard.ontouchremoved(79);
+    }, false);
+//==========================================
+      var chA = document.getElementById('chA');
+      
+    chA.addEventListener('touchstart', function(e){
+        document.getElementById("chA").style.backgroundColor = "#555555";
+        mykeyboard.ontouchdown(65);
+    }, false);
+
+    chA.addEventListener('touchend', function(e){
+        document.getElementById("chA").style.backgroundColor = "white";
+        mykeyboard.ontouchremoved(65);
+    }, false);
+//==========================================
+      var chD = document.getElementById('chD');
+      
+    chD.addEventListener('touchstart', function(e){
+        document.getElementById("chD").style.backgroundColor = "#555555";
+        mykeyboard.ontouchdown(68);
+    }, false);
+
+    chD.addEventListener('touchend', function(e){
+        document.getElementById("chD").style.backgroundColor = "white";
+        mykeyboard.ontouchremoved(68);
+    }, false);
+//==========================================
+      var chENTER = document.getElementById('chENTER');
+      
+    chENTER.addEventListener('touchstart', function(e){
+        document.getElementById("chENTER").style.backgroundColor = "#555555";
+        mykeyboard.ontouchdown(13);
+    }, false);
+
+    chENTER.addEventListener('touchend', function(e){
+        document.getElementById("chENTER").style.backgroundColor = "white";
+        mykeyboard.ontouchremoved(13);
+    }, false);
+//==========================================
+      var chSPACE = document.getElementById('chSPACE');
+      
+    chSPACE.addEventListener('touchstart', function(e){
+        document.getElementById("chSPACE").style.backgroundColor = "#555555";
+        mykeyboard.ontouchdown(32);
+    }, false);
+
+    chSPACE.addEventListener('touchend', function(e){
+        document.getElementById("chSPACE").style.backgroundColor = "white";
+        mykeyboard.ontouchremoved(32);
+    }, false);
+//==========================================
+
+
+      var myAlarmManager = new alarmManager();
+      var myInterruptController = new interruptController();
+      var myTimerA = new timer(myAlarmManager, myInterruptController,"A");
+      var myTimerB = new timer(myAlarmManager, myInterruptController, "B");
+      var myTape = new tape(myAlarmManager, myInterruptController);
+      var mymem = new memory(postInit,mykeyboard,myTimerA, myTimerB, myInterruptController, myTape);
+      var mycpu = new cpu(mymem);
+      mycpu.setInterruptSource(myInterruptController);
+      myAlarmManager.setCpu(mycpu);
+      myInterruptController.setCpu(mycpu);
+      var myvideo = new video(document.getElementById("screen"), mymem, mycpu);
       var running = false;
       var breakpoint = 0;
+     
+     function attachTape() {
+       myTape.attachTape(document.getElementById("files").files[0]);
+     }
 
      function postInit() {
         document.getElementById("btnStep").disabled = false;
@@ -68,14 +180,15 @@ Break at: <input type="text" id="breakpoint">
       function runBatch() {
         if (!running)
           return;
-        myvideo.updateCanvas();
-        var targetCycleCount =  mycpu.getCycleCount() + 20000;
-        while (mycpu.getCycleCount() < targetCycleCount) { 
+        //myvideo.updateCanvas();
+        //var targetCycleCount =  mycpu.getCycleCount() + 20000;
+        while (true) { 
           mycpu.step();
-          if (mycpu.getCycleCount() > 6000000)            
-            mymem.setSimulateKeypress();
-          var blankingPeriodLow = targetCycleCount - 100;
-          if ((mycpu.getCycleCount() >= blankingPeriodLow) & (mycpu.getCycleCount() <= targetCycleCount)) {
+          myAlarmManager.processAlarms();
+          //if (mycpu.getCycleCount() > 6000000)            
+          //  mymem.setSimulateKeypress();
+          //var blankingPeriodLow = targetCycleCount - 100;
+          if (myvideo.getCurrentLine() > 284) { 
             mymem.writeMem(0xD012, 0);
           } else  {
             mymem.writeMem(0xD012, 1);
@@ -84,8 +197,12 @@ Break at: <input type="text" id="breakpoint">
             stopEm();
             return;
           }
+          var framefinished = myvideo.processpixels();
+          if (framefinished)
+            return;
         }
-        mycpu.setInterrupt();
+        //mycpu.setInterrupt();
+
       }
       
       function startEm() {
@@ -101,7 +218,7 @@ Break at: <input type="text" id="breakpoint">
 
       function stopEm() {
         running = false;
-        clearInterval(mytimer);
+        clearInterval(myTimer);
         displayEmuState();
 
         document.getElementById("btnStep").disabled = false;
