@@ -14,6 +14,7 @@
   <body onkeydown="mykeyboard.onkeydown(event)" onkeyup="mykeyboard.onkeyup(event)">
     <h1>6502 Emulator From Scratch</h1>
     <p>This is JavaScript Test</p>
+    <p id="fps"></p>
 <canvas id="screen" width="400" height="284">
 
 </canvas>
@@ -52,6 +53,11 @@ Break at: <input type="text" id="breakpoint">
     <script language="JavaScript">
 
       var mykeyboard = new keyboard();
+        var d = new Date();
+        var startTime = d.getTime();
+        var totalTime = 0;
+        var numTimes = 0;
+
 
       //timer
       //memory
@@ -180,6 +186,11 @@ Break at: <input type="text" id="breakpoint">
       function runBatch() {
         if (!running)
           return;
+        var d = new Date();
+        var startTime = d.getTime();
+        //var totalTime = 0;
+        //var numTimes = 0;
+
         //myvideo.updateCanvas();
         //var targetCycleCount =  mycpu.getCycleCount() + 20000;
         while (true) { 
@@ -198,8 +209,19 @@ Break at: <input type="text" id="breakpoint">
             return;
           }
           var framefinished = myvideo.processpixels();
-          if (framefinished)
+          if (framefinished) {
+            d = new Date();
+            endTime = d.getTime();
+            totalTime = totalTime + (endTime - startTime);
+            numTimes++;
+            if (numTimes == 100) {
+              var avg = totalTime / 100;
+              totalTime = 0;
+              numTimes = 0;
+              document.getElementById("fps").innerHTML = avg.toString();
+            }
             return;
+          }
         }
         //mycpu.setInterrupt();
 
