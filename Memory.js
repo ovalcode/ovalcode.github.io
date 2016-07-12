@@ -130,16 +130,23 @@ oReqChar.send(null);
   }
 
   function kernelEnabled() {
-    temp = mainMem[1] & 3;
+    var temp = mainMem[1] & 3;
     return (temp >= 2);
   }
+
+  function IOEnabled() {
+    var temp = mainMem[1] & 3;
+    var temp2 = mainMem[1] & 4;
+    return (temp2 != 0) & (temp != 0);
+  }
+
 
   this.readMem = function (address) {
     if ((address >= 0xa000) & (address <=0xbfff))
       return basicRom[address & 0x1fff];
     else if ((address >= 0xe000) & (address <=0xffff) & kernelEnabled())
       return kernalRom[address & 0x1fff];
-    else if ((address >= 0xdc00) & (address <= 0xdcff)) {
+    else if ((address >= 0xdc00) & (address <= 0xdcff) & IOEnabled()) {
       return ciaRead(address);
     } else if (address == 1) {
       var temp = mainMem[address] & 239;
@@ -151,7 +158,7 @@ oReqChar.send(null);
   }
 
   this.writeMem = function (address, byteval) {
-    if ((address >= 0xdc00) & (address <= 0xdcff)) {
+    if ((address >= 0xdc00) & (address <= 0xdcff) & IOEnabled()) {
       ciaWrite(address, byteval);
       return;
     } else if (address == 1) {

@@ -56,7 +56,7 @@ function video(mycanvas, mem, cpu) {
         ctx.putImageData(imgData,0,0);
         posInCanvas = 0;
         charPosInMem = 0;
-        //imgData = ctx.createImageData(400, 284);
+        imgData = ctx.createImageData(400, 284);
         return true;
       }
 
@@ -93,8 +93,8 @@ function video(mycanvas, mem, cpu) {
   function drawTextModeNormal(charPos) {
     var screenCode = localMem.readMem(1024 + charPos);
     var currentLine = localMem.readCharRom((screenCode << 3) + ((cycleline - 42) & 7));
-    var textColor = localMem.readMem(0xd800 + charPos);
-    var backgroundColor = localMem.readMem(0xd021);
+    var textColor = localMem.readMem(0xd800 + charPos) & 0xf;
+    var backgroundColor = localMem.readMem(0xd021) & 0xf;
     var currentCol = 0;
     for (currentCol = 0; currentCol < 8; currentCol++) {
       var pixelSet = (currentLine & 0x80) == 0x80;
