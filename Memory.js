@@ -151,6 +151,8 @@ oReqChar.send(null);
       return ciaRead(address);
     } else if ((address >= 0xd000) & (address <= 0xd02e)) {
       return myVideo.readReg(address - 0xd000);
+    } else if ((address >= 0xd800) & (address <= 0xdbe8)) {
+      return myVideo.readColorRAM (address - 0xd800);
     } else {
       return IOUnclaimed[address - 0xd000];
     } 
@@ -161,6 +163,8 @@ oReqChar.send(null);
       return ciaWrite(address, value);
     } else if ((address >= 0xd000) & (address <= 0xd02e)) {
       return myVideo.writeReg(address - 0xd000, value);
+    } else if ((address >= 0xd800) & (address <= 0xdbe8)) {
+      return myVideo.writeColorRAM (address - 0xd800, value);
     } else {
       IOUnclaimed[address - 0xd000] = value;
       return;

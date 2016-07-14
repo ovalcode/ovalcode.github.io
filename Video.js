@@ -9,6 +9,7 @@ function video(mycanvas, mem, cpu) {
   var posInCanvas = 0;
   var imgData = ctx.createImageData(400, 284);
   var registers = new Uint8Array(0x2e);
+  var colorRAM = new Uint8Array(1000);
 
   const colors = [[0, 0, 0],
                   [255, 255, 255],
@@ -30,6 +31,15 @@ function video(mycanvas, mem, cpu) {
   this.getCurrentLine = function() {
     return cycleline;
   }
+
+  this.writeColorRAM = function(number, value) {
+    colorRAM[number] = value;
+  }
+
+  this.readColorRAM = function(number) {
+    return colorRAM[number];
+  }
+
 
   this.writeReg = function (number, value) {
     registers[number] = value;
@@ -72,13 +82,8 @@ function video(mycanvas, mem, cpu) {
     }
       return false;
     //TODO:
-    //When number of lines finished
-    //force draw
-    //recreate frame
-    //remove call to update canvas in runbatch method
-    //call putimage method
-    //return boolean indicating runbatch must exit
-    //change runbatch to exit if above rteurn true
+    //move color memory access
+    //add readvic method
   }
 
   function displayEnabled() {
@@ -101,7 +106,7 @@ function video(mycanvas, mem, cpu) {
   function drawTextModeNormal(charPos) {
     var screenCode = localMem.readMem(1024 + charPos);
     var currentLine = localMem.readCharRom((screenCode << 3) + ((cycleline - 42) & 7));
-    var textColor = localMem.readMem(0xd800 + charPos) & 0xf;
+    var textColor = colorRAM[charPos] & 0xf;
     var backgroundColor = registers[0x21] & 0xf;
     var currentCol = 0;
     for (currentCol = 0; currentCol < 8; currentCol++) {
@@ -125,11 +130,11 @@ function video(mycanvas, mem, cpu) {
 
   function drawBitmapModeMultiColor(charPos) {
     var currentLine = localMem.readMem(0xe000+(charPos << 3) + ((cycleline - 42) & 7));
-    var textColor = localMem.readMem(0xd800 + charPos);
+    var textColor = colorRAM[charPos];
     var backgroundColor = registers[0x21];
     var color1 = (localMem.readMem(49152 + charPos) & 0xf0) >> 4;
     var color2 = localMem.readMem(49152 + charPos) & 0xf;
-    var color3 = localMem.readMem(0xd800 + charPos) & 0xf;
+    var color3 = colorRAM[charPos] & 0xf;
     var colorArray = [backgroundColor, color1, color2, color3];
     var pixPair = 0;
     for (pixPair = 0; pixPair < 4; pixPair++) {
