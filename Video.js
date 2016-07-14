@@ -104,8 +104,12 @@ function video(mycanvas, mem, cpu) {
   }
 
   function drawTextModeNormal(charPos) {
-    var screenCode = localMem.readMem(1024 + charPos);
-    var currentLine = localMem.readCharRom((screenCode << 3) + ((cycleline - 42) & 7));
+    var baseCharAdd = (registers[0x18] >> 1) & 7;
+    baseCharAdd = baseCharAdd << 11;
+    var baseScreenAdd = (registers[0x18] >> 4) & f;
+    baseScreenAdd = baseScreenAdd << 10;
+    var screenCode = localMem.vicRead(baseScreenAdd + charPos);
+    var currentLine = localMem.vicRead(baseCharAdd + (screenCode << 3) + ((cycleline - 42) & 7));
     var textColor = colorRAM[charPos] & 0xf;
     var backgroundColor = registers[0x21] & 0xf;
     var currentCol = 0;
@@ -129,11 +133,15 @@ function video(mycanvas, mem, cpu) {
   }
 
   function drawBitmapModeMultiColor(charPos) {
-    var currentLine = localMem.readMem(0xe000+(charPos << 3) + ((cycleline - 42) & 7));
+    var baseCharAdd = (registers[0x18] >> 1) & 7;
+    baseCharAdd = baseCharAdd << 11;
+    var baseScreenAdd = (registers[0x18] >> 4) & f;
+    baseScreenAdd = baseScreenAdd << 10;
+    var currentLine = localMem.vicRead(baseCharAdd+(charPos << 3) + ((cycleline - 42) & 7));
     var textColor = colorRAM[charPos];
     var backgroundColor = registers[0x21];
-    var color1 = (localMem.readMem(49152 + charPos) & 0xf0) >> 4;
-    var color2 = localMem.readMem(49152 + charPos) & 0xf;
+    var color1 = (localMem.vicRead(baseScreenAdd + charPos) & 0xf0) >> 4;
+    var color2 = localMem.vicRead(baseScreenAdd + charPos) & 0xf;
     var color3 = colorRAM[charPos] & 0xf;
     var colorArray = [backgroundColor, color1, color2, color3];
     var pixPair = 0;

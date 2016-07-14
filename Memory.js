@@ -25,6 +25,21 @@ function memory(allDownloadedCallback, keyboard, timerA, timerB, interruptContro
     myVideo = video;
   }
 
+  this.vicRead = function(address) {
+    var topBits = IOUnclaimed[0xd00] & 3;
+    topBits = 3 - topBits;
+    var effectiveAddress = (topBits << 14) | address;
+    if ((effectiveAddress >= 0x9000) & (effectiveAddress < 0xa000)) {
+      effectiveAddress = effectiveAddress & 3fff;
+      return charRom[effectiveAddress];
+    } else if ((effectiveAddress >= 0x1000) & (effectiveAddress < 0x2000)) {
+      effectiveAddress = effectiveAddress & 3fff;
+      return charRom[effectiveAddress];
+    } else {
+      return mainMem[address];
+    }
+  }
+
   function downloadCompleted() {
     outstandingDownloads--;
     if (outstandingDownloads == 0)
