@@ -173,8 +173,8 @@ oReqChar.send(null);
       return basicRom[address & 0x1fff];
     else if ((address >= 0xe000) & (address <=0xffff) & kernelEnabled())
       return kernalRom[address & 0x1fff];
-    else if ((address >= 0xdc00) & (address <= 0xdcff) & IOEnabled()) {
-      return ciaRead(address);
+    else if ((address >= 0xd000) & (address <= 0xdfff) & IOEnabled()) {
+      return IORead(address);
     } else if (address == 1) {
       var temp = mainMem[address] & 239;
       if (!playPressed)
@@ -185,8 +185,8 @@ oReqChar.send(null);
   }
 
   this.writeMem = function (address, byteval) {
-    if ((address >= 0xdc00) & (address <= 0xdcff) & IOEnabled()) {
-      ciaWrite(address, byteval);
+    if ((address >= 0xd000) & (address <= 0xdfff) & IOEnabled()) {
+      IOWrite(address, byteval);
       return;
     } else if (address == 1) {
       var temp = byteval & 32;
