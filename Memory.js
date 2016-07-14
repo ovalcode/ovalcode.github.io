@@ -6,8 +6,10 @@ function memory(allDownloadedCallback, keyboard, timerA, timerB, interruptContro
   var basicRom = new Uint8Array(8192);
   var kernalRom = new Uint8Array(8192);
   var charRom = new Uint8Array(4192);
+  var IOUnclaimed = new Uint8Array(4096);
   var outstandingDownloads = 3;
   var simulateKeypress = false;
+  var myVideo;
   var keyboardInstance = keyboard;
   var mytimerA = timerA;
   var mytimerB = timerB;
@@ -17,6 +19,10 @@ function memory(allDownloadedCallback, keyboard, timerA, timerB, interruptContro
 
   this.togglePlayPresed = function() {
     playPressed = !playPressed;
+  }
+
+  this.setVideo = function(video) {
+    myVideo = video;
   }
 
   function downloadCompleted() {
@@ -138,6 +144,27 @@ oReqChar.send(null);
     var temp = mainMem[1] & 3;
     var temp2 = mainMem[1] & 4;
     return (temp2 != 0) & (temp != 0);
+  }
+
+  function IORead(address) {
+    if ((address >= 0xdc00) & (address <= 0xdcff)) {
+      return ciaRead(address);
+    } else if ((address >= 0xd000) & (address <= 0xd02e)) {
+      return myVideo.readReg(address - 0xd000);
+    } else {
+      return IOUnclaimed[address - 0xd000];
+    } 
+  }
+
+  function IOWrite(address, value) {
+    if ((address >= 0xdc00) & (address <= 0xdcff)) {
+      return ciaWrite(address, value);
+    } else if ((address >= 0xd000) & (address <= 0xd02e)) {
+      return myVideo.writeReg(address - 0xd000, value);
+    } else {
+      IOUnclaimed[address - 0xd000] = value;
+      return;
+    } 
   }
 
 

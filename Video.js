@@ -8,7 +8,7 @@ function video(mycanvas, mem, cpu) {
   var charPosInMem = 0;  
   var posInCanvas = 0;
   var imgData = ctx.createImageData(400, 284);
-
+  var registers = new Uint8Array(0x2e);
 
   const colors = [[0, 0, 0],
                   [255, 255, 255],
@@ -29,6 +29,14 @@ function video(mycanvas, mem, cpu) {
 
   this.getCurrentLine = function() {
     return cycleline;
+  }
+
+  this.writeReg = function (number, value) {
+    registers[number] = value;
+  }
+
+  this.readReg = function (number) {
+    return registers[number];
   }
 
   this.processpixels = function() {
@@ -74,7 +82,7 @@ function video(mycanvas, mem, cpu) {
   }
 
   function displayEnabled() {
-    return ((localMem.readMem(0xd011) & 0x10) != 0)
+    return ((registers[0x11] & 0x10) != 0)
   }
 
   function updateCharPos() {
@@ -94,7 +102,7 @@ function video(mycanvas, mem, cpu) {
     var screenCode = localMem.readMem(1024 + charPos);
     var currentLine = localMem.readCharRom((screenCode << 3) + ((cycleline - 42) & 7));
     var textColor = localMem.readMem(0xd800 + charPos) & 0xf;
-    var backgroundColor = localMem.readMem(0xd021) & 0xf;
+    var backgroundColor = registers[0x21] & 0xf;
     var currentCol = 0;
     for (currentCol = 0; currentCol < 8; currentCol++) {
       var pixelSet = (currentLine & 0x80) == 0x80;
@@ -118,7 +126,7 @@ function video(mycanvas, mem, cpu) {
   function drawBitmapModeMultiColor(charPos) {
     var currentLine = localMem.readMem(0xe000+(charPos << 3) + ((cycleline - 42) & 7));
     var textColor = localMem.readMem(0xd800 + charPos);
-    var backgroundColor = localMem.readMem(0xd021);
+    var backgroundColor = registers[0x21];
     var color1 = (localMem.readMem(49152 + charPos) & 0xf0) >> 4;
     var color2 = localMem.readMem(49152 + charPos) & 0xf;
     var color3 = localMem.readMem(0xd800 + charPos) & 0xf;
@@ -146,8 +154,8 @@ function video(mycanvas, mem, cpu) {
 //d011 bit 5 -> bitmap mode
 //d016 bit 4 -> multicolor mode
   function drawCharline() {
-    var bitmapMode = ((localMem.readMem(0xd011) & 0x20) != 0) ? 1 : 0;
-    var multicolorMode = ((localMem.readMem(0xd016) & 0x10) != 0) ? 1 : 0;
+    var bitmapMode = ((registers[0x11] & 0x20) != 0) ? 1 : 0;
+    var multicolorMode = ((registers[0x16] & 0x10) != 0) ? 1 : 0;
     var screenMode = (multicolorMode << 1) | bitmapMode;
     switch (screenMode) {
       //text mode, normal
@@ -196,7 +204,7 @@ function video(mycanvas, mem, cpu) {
   }
 
   function fillBorderColor() {
-    var borderColor = localMem.readMem(0xd020) & 0xf;
+    var borderColor = registers[0x20] & 0xf;
     var i;
     for (i = 0; i < 8; i++ ) {
       imgData.data[posInCanvas + 0] = colors[borderColor][0];
