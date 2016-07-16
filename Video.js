@@ -46,7 +46,15 @@ function video(mycanvas, mem, cpu) {
   }
 
   this.readReg = function (number) {
-    return registers[number];
+    if (number == 0x11) {
+      var bit8 = (cycleline & 0x100) >> 1;
+      var temp = (registers[number] & 0x7f) | bit8;
+      return temp;
+    } else if (number == 0x12) {
+      return (cycleline & 0xff);
+    } else {
+      return registers[number];
+    }
   }
 
   this.processpixels = function() {
@@ -135,7 +143,7 @@ function video(mycanvas, mem, cpu) {
   function drawBitmapModeMultiColor(charPos) {
     var baseCharAdd = (registers[0x18] >> 1) & 7;
     baseCharAdd = baseCharAdd << 11;
-    var baseScreenAdd = (registers[0x18] >> 4) & f;
+    var baseScreenAdd = (registers[0x18] >> 4) & 0xf;
     baseScreenAdd = baseScreenAdd << 10;
     var currentLine = localMem.vicRead(baseCharAdd+(charPos << 3) + ((cycleline - 42) & 7));
     var textColor = colorRAM[charPos];
