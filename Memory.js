@@ -2,7 +2,7 @@ function memory(allDownloadedCallback, keyboard, timerA, timerB, interruptContro
 
 {
   var mainMem = new Uint8Array(65536);
-  mainMem[1] = 3;
+  mainMem[1] = 0xff;
   var basicRom = new Uint8Array(8192);
   var kernalRom = new Uint8Array(8192);
   var charRom = new Uint8Array(4192);
@@ -30,13 +30,13 @@ function memory(allDownloadedCallback, keyboard, timerA, timerB, interruptContro
     topBits = 3 - topBits;
     var effectiveAddress = (topBits << 14) | address;
     if ((effectiveAddress >= 0x9000) & (effectiveAddress < 0xa000)) {
-      effectiveAddress = effectiveAddress & 0x3fff;
+      effectiveAddress = effectiveAddress & 0xfff;
       return charRom[effectiveAddress];
     } else if ((effectiveAddress >= 0x1000) & (effectiveAddress < 0x2000)) {
-      effectiveAddress = effectiveAddress & 0x3fff;
+      effectiveAddress = effectiveAddress & 0xfff;
       return charRom[effectiveAddress];
     } else {
-      return mainMem[address];
+      return mainMem[effectiveAddress];
     }
   }
 
