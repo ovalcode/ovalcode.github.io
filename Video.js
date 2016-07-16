@@ -106,7 +106,7 @@ function video(mycanvas, mem, cpu) {
   function drawTextModeNormal(charPos) {
     var baseCharAdd = (registers[0x18] >> 1) & 7;
     baseCharAdd = baseCharAdd << 11;
-    var baseScreenAdd = (registers[0x18] >> 4) & f;
+    var baseScreenAdd = (registers[0x18] >> 4) & 0xf;
     baseScreenAdd = baseScreenAdd << 10;
     var screenCode = localMem.vicRead(baseScreenAdd + charPos);
     var currentLine = localMem.vicRead(baseCharAdd + (screenCode << 3) + ((cycleline - 42) & 7));
