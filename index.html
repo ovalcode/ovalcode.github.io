@@ -6,19 +6,54 @@
     <script src="Cpu.js"></script>
     <script src="Video.js"></script>
     <script src="Keyboard.js"></script>
-    <script src="InterruptController.js"></script>
+    <script src="Tape.js"></script>
     <script src="AlarmManager.js"></script>
     <script src="Timer.js"></script>
-    <script src="Tape.js"></script>
+    <script src="InterruptController.js"></script>
   </head>
   <body onkeydown="mykeyboard.onkeydown(event)" onkeyup="mykeyboard.onkeyup(event)">
     <h1>6502 Emulator From Scratch</h1>
     <p>This is JavaScript Test</p>
     <p id="fps"></p>
-<canvas id="screen" width="400" height="284">
+<div style="position:relative; width:400px; height:284px">
+<canvas id="screenBackground" width="400" height="284" style="z-index: 1; position:absolute; left: 0px; top: 0px">
 
 </canvas>
+
+<canvas id="spriteBackground" width="400" height="284" style="z-index: 2; position:absolute; left: 0px; top: 0px">
+
+</canvas>
+
+<canvas id="screenForeground" width="400" height="284" style="z-index: 3; position:absolute; left: 0px; top: 0px">
+
+</canvas>
+
+<canvas id="spriteForefround" width="400" height="284" style="z-index: 4; position:absolute; left: 0px; top: 0px">
+
+</canvas>
+
+</div><br/>
+<table border="1">
+  <tr>
+  <td style="background-color:white; -webkit-user-select:none" id=""> </td>
+  <td style="background-color:white; -webkit-user-select:none" id="joyUp">Up</td>
+  <td style="background-color:white; -webkit-user-select:none" id=""> </td>
+
+  </tr>
+  <tr>
+  <td style="background-color:white; -webkit-user-select:none" id="joyLeft">Left</td>
+  <td style="background-color:white; -webkit-user-select:none" id=""> </td>
+  <td style="background-color:white; -webkit-user-select:none" id="joyRight">Right</td>
+  </tr>
+  <tr>
+  <td style="background-color:white; -webkit-user-select:none" id=""> </td>
+  <td style="background-color:white; -webkit-user-select:none" id="joyDown">Down</td>
+  <td style="background-color:white; -webkit-user-select:none" id=""> </td>
+  </tr>
+
+</table>
 <br/>
+
 <table>
   <tr>
   <td style="background-color:white; -webkit-user-select:none" id="chL">L</td>
@@ -31,12 +66,13 @@
   <td style="background-color:white; -webkit-user-select:none" id="chSPACE">SPACE</td>
   </tr>
 </table>
+
+<input type="file" id="file" name="myfile"/>
+<button onclick="myTape.attachTape(document.getElementById('file').files[0])">Attach</button>
 <br/>
-<input type="file" id="files" name="myfile"/>
-<button onclick="attachTape()">Attach</button>
-</br>
 <button onclick="mymem.togglePlayPresed()">Play</button>
-</br>
+<br/>
+<input type="checkbox" id="allowDebug"/> Allow logging<br/>
 <textarea id="registers" name="reg" rows="1" cols="60"></textarea>
 <br/>
 <textarea id="memory" name="mem" rows="15" cols="60"></textarea>
@@ -52,17 +88,6 @@ From Location:
 Break at: <input type="text" id="breakpoint">
     <script language="JavaScript">
 
-      var mykeyboard = new keyboard();
-        var d = new Date();
-        var startTime = d.getTime();
-        var totalTime = 0;
-        var numTimes = 0;
-
-
-      //timer
-      //memory
-
-      //interrupt controller
 //==========================================
       var chL = document.getElementById('chL');
       
@@ -136,25 +161,77 @@ Break at: <input type="text" id="breakpoint">
         mykeyboard.ontouchremoved(32);
     }, false);
 //==========================================
+      var joyUp = document.getElementById('joyUp');
+      
+    joyUp.addEventListener('touchstart', function(e){
+        document.getElementById("joyUp").style.backgroundColor = "#555555";
+        mykeyboard.ontouchdown(104);
+    }, false);
 
+    joyUp.addEventListener('touchend', function(e){
+        document.getElementById("joyUp").style.backgroundColor = "white";
+        mykeyboard.ontouchremoved(104);
+    }, false);
+//================================================
+      var joyDown = document.getElementById('joyDown');
+      
+    joyDown.addEventListener('touchstart', function(e){
+        document.getElementById("joyDown").style.backgroundColor = "#555555";
+        mykeyboard.ontouchdown(98);
+    }, false);
 
+    joyDown.addEventListener('touchend', function(e){
+        document.getElementById("joyDown").style.backgroundColor = "white";
+        mykeyboard.ontouchremoved(98);
+    }, false);
+//====================================================
+      var joyLeft = document.getElementById('joyLeft');
+      
+    joyLeft.addEventListener('touchstart', function(e){
+        document.getElementById("joyLeft").style.backgroundColor = "#555555";
+        mykeyboard.ontouchdown(100);
+    }, false);
+
+    joyLeft.addEventListener('touchend', function(e){
+        document.getElementById("joyLeft").style.backgroundColor = "white";
+        mykeyboard.ontouchremoved(100);
+    }, false);
+//=====================================================
+      var joyRight = document.getElementById('joyRight');
+      
+    joyRight.addEventListener('touchstart', function(e){
+        document.getElementById("joyRight").style.backgroundColor = "#555555";
+        mykeyboard.ontouchdown(102);
+    }, false);
+
+    joyRight.addEventListener('touchend', function(e){
+        document.getElementById("joyRight").style.backgroundColor = "white";
+        mykeyboard.ontouchremoved(102);
+    }, false);
+//=====================================================
+      var dateObject = new Date();
+      var startTime = dateObject.getTime();
+      var avgTime = 0;
+      var numTimes = 0;
+      var mykeyboard = new keyboard();
       var myAlarmManager = new alarmManager();
       var myInterruptController = new interruptController();
       var myTimerA = new timer(myAlarmManager, myInterruptController,"A");
       var myTimerB = new timer(myAlarmManager, myInterruptController, "B");
       var myTape = new tape(myAlarmManager, myInterruptController);
-      var mymem = new memory(postInit,mykeyboard,myTimerA, myTimerB, myInterruptController, myTape);
+      var mymem = new memory(postInit,mykeyboard, myTimerA, myTimerB, myInterruptController, myTape);
       var mycpu = new cpu(mymem);
-      mycpu.setInterruptSource(myInterruptController);
       myAlarmManager.setCpu(mycpu);
       myInterruptController.setCpu(mycpu);
-      var myvideo = new video(document.getElementById("screen"), mymem, mycpu);
+      mycpu.setInterruptController(myInterruptController);
+
+      var myvideo = new video(document.getElementById("screenBackground"), document.getElementById("spriteBackground"), 
+        document.getElementById("screenForeground"), document.getElementById("spriteForefround"), mymem, mycpu);
+      mymem.setVideo(myvideo);
+      mycpu.setVideo(myvideo);
+      var mytimer;
       var running = false;
       var breakpoint = 0;
-     
-     function attachTape() {
-       myTape.attachTape(document.getElementById("files").files[0]);
-     }
 
      function postInit() {
         document.getElementById("btnStep").disabled = false;
@@ -186,11 +263,21 @@ Break at: <input type="text" id="breakpoint">
       function runBatch() {
         if (!running)
           return;
-        var d = new Date();
-        var startTime = d.getTime();
-        //var totalTime = 0;
-        //var numTimes = 0;
-
+        dateObject = new Date();
+        var endTime = dateObject.getTime();
+        var frameDuration = endTime - startTime;
+        startTime = endTime;
+        numTimes++;
+        avgTime = avgTime + frameDuration;
+        if (numTimes == 100) {
+          avgTime = avgTime / 100;
+          var framesPerSecond = 1000 / avgTime;
+          document.getElementById("fps").innerHTML = framesPerSecond.toString();
+          avgTime = 0;
+          numTimes = 0;
+        }
+        mycpu.setAllowLogging(document.getElementById("allowDebug").checked);
+        myvideo.initForNextFrame();
         //myvideo.updateCanvas();
         //var targetCycleCount =  mycpu.getCycleCount() + 20000;
         while (true) { 
@@ -199,32 +286,20 @@ Break at: <input type="text" id="breakpoint">
           //if (mycpu.getCycleCount() > 6000000)            
           //  mymem.setSimulateKeypress();
           //var blankingPeriodLow = targetCycleCount - 100;
-          if (myvideo.getCurrentLine() > 284) { 
-            mymem.writeMem(0xD012, 0);
-          } else  {
-            mymem.writeMem(0xD012, 1);
-          }
+          //if (myvideo.getCurrentLine() > 284) {
+          //  mymem.writeMem(0xD012, 0);
+          //} else  {
+          //  mymem.writeMem(0xD012, 1);
+          //}
           if (mycpu.getPc() == breakpoint) {
             stopEm();
             return;
           }
           var framefinished = myvideo.processpixels();
-          if (framefinished) {
-            d = new Date();
-            endTime = d.getTime();
-            totalTime = totalTime + (endTime - startTime);
-            numTimes++;
-            if (numTimes == 100) {
-              var avg = totalTime / 100;
-              totalTime = 0;
-              numTimes = 0;
-              document.getElementById("fps").innerHTML = avg.toString();
-            }
+          if (framefinished)            
             return;
-          }
         }
         //mycpu.setInterrupt();
-
       }
       
       function startEm() {
@@ -240,7 +315,7 @@ Break at: <input type="text" id="breakpoint">
 
       function stopEm() {
         running = false;
-        clearInterval(myTimer);
+        clearInterval(mytimer);
         displayEmuState();
 
         document.getElementById("btnStep").disabled = false;
