@@ -44,7 +44,7 @@ function video(backgroundCanvas, spriteBackgroundCanvas, foregroundCanvas, sprit
   }
 
   this.vicIntOccured = function() {
-    return registers[0x19] >= 128;
+    return (registers[0x19] >= 128) & rasterIntEnabled();
   }
 
   this.writeReg = function (number, value) {
@@ -121,7 +121,7 @@ function video(backgroundCanvas, spriteBackgroundCanvas, foregroundCanvas, sprit
       if (cycleInLine > 63) {
         cycleInLine = 0;
         cycleline++;
-        if (targetRasterReached() & rasterIntEnabled()) {
+        if (targetRasterReached() /*& rasterIntEnabled()*/) {
           registers[0x19] = registers[0x19] | 1 | 128;
         }
         updateCharPos();
