@@ -148,6 +148,13 @@ oReqChar.send(null);
     return (temp2 != 0) & (temp != 0);  
   }
 
+  function CharRomEnabled() {    
+    var temp = mainMem[1] & 3;    
+    var temp2 = mainMem[1] & 4;    
+    return (temp2 == 0) & (temp != 0);  
+  }
+
+
   function basicEnabled() {
     temp = mainMem[1] & 3;
     return (temp == 3);
@@ -199,8 +206,12 @@ oReqChar.send(null);
       return basicRom[address & 0x1fff];
     else if ((address >= 0xe000) & (address <=0xffff) & kernelEnabled())
       return kernalRom[address & 0x1fff];
-    else if ((address >= 0xd000) & (address <= 0xdfff) & IOEnabled()) {
-      return IORead(address);
+    else if ((address >= 0xd000) & (address <= 0xdfff) & (IOEnabled() || CharRomEnabled())) {
+      if (IOEnabled()) {
+        return IORead(address);
+      } else {
+        return charRom[address & 0xfff];
+      }
     } else if (address == 1) {
       var temp = mainMem[address] & 239;
       if (!playPressed)
