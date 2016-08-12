@@ -256,9 +256,9 @@ function video(backgroundCanvas, spriteBackgroundCanvas, foregroundCanvas, sprit
     var textColor = colorRAM[charPos] & 0xf;
     if ((textColor & 8) == 0)
       return drawTextModeNormal(charPos);
-    var backgroundColor = registers[0x21];
-    var color1 = registers[0x22];
-    var color2 = registers[0x23];
+    var backgroundColor = registers[0x21] & 0xf;
+    var color1 = registers[0x22] & 0xf;
+    var color2 = registers[0x23] & 0xf;
     var color3 = textColor & 7;
     var colorArray = [backgroundColor, color1, color2, color3];
     var pixPair = 0;
