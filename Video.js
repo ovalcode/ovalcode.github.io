@@ -203,6 +203,11 @@ function video(backgroundCanvas, spriteBackgroundCanvas, foregroundCanvas, sprit
     }
   }
 
+  function getExtendedBackgroundColor(charCode) {
+    var selector = (charCode & 0xc0) >> 6;
+    return registers[selector + 0x21] & 0xf;
+  }
+
   function drawTextModeNormal(charPos) {
     var baseCharAdd = (registers[0x18] >> 1) & 7;    
     baseCharAdd = baseCharAdd << 11;    
@@ -211,7 +216,7 @@ function video(backgroundCanvas, spriteBackgroundCanvas, foregroundCanvas, sprit
     var screenCode = localMem.vicRead(baseScreenAdd + charPos);
     var currentLine = localMem.vicRead(baseCharAdd + (screenCode << 3) + ((cycleline - 42) & 7));
     var textColor = colorRAM[charPos] & 0xf;
-    var backgroundColor = registers[0x21] & 0xf;
+    var backgroundColor = ((registers[0x11] & 0x40) == 0) ? (registers[0x21] & 0xf) : getExtendedBackgroundColor(screenCode);
     var currentCol = 0;
     for (currentCol = 0; currentCol < 8; currentCol++) {
       var pixelSet = (currentLine & 0x80) == 0x80;
