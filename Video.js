@@ -103,6 +103,16 @@ function video(backgroundCanvas, spriteBackgroundCanvas, foregroundCanvas, sprit
   }
 
   this.processpixels = function() {
+    //change this method to processscanline
+    //loop from 0 to 63
+    //break big loop into three: border, screen,border
+    //for screen blanked use own screen method
+    //nb!! remember extended
+    //before loop start figure out mode and assign application method to varibale
+    //call variable each time
+    //think of sprites
+    //do sprite loop after big loop
+    //for each sprite figure out if vertical falls within scaline then draw sprite from beginning to end
     var numBytes = mycpu.getCycleCount() - cpuCycles;
     cpuCycles = mycpu.getCycleCount();
     var i;
