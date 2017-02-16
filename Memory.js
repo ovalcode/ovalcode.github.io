@@ -1,9 +1,14 @@
-function memory(allDownloadedCallback, keyboard, timerA, timerB, interruptController,tape)
-
+function memory(allDownloadedCallback, keyboard, timerA, timerB, cia2TimerA, 
+                interruptController, cia2InterruptController, tape)
+//cia2 -> timer a+interrupt controller in both declaration and global vars
+//create cia2 read+write function
+//invoke above functions in ioread+iowrite
 {
   var mytimerA = timerA;
   var mytimerB = timerB;
+  var myCIA2timerA = cia2TimerA;
   var myinterruptController = interruptController;
+  var myCIA2interruptController = cia2InterruptController;
   var mytape = tape;
   var mainMem = new Uint8Array(65536);
   mainMem[1] = 0xff;
@@ -116,6 +121,24 @@ oReqChar.send(null);
 
   }
 
+  function cia2Read(address) {
+//  var myCIA2timerA = cia2TimerA;
+//  var myCIA2interruptController = cia2InterruptController;
+
+    if (address == 0x4) {
+      return myCIA2timerA.getTimerLow();
+    } else if (address == 0x5) {
+      return myCIA2timerA.getTimerHigh();
+    } if (address == 0xd) {
+      return myCIA2interruptController.getInterrupts();
+    } else if (address == 0xe) {
+      return myCIA2timerA.getControlRegister();
+    } else {
+      return mainMem[address];
+    }
+
+  }
+
   function ciaWrite(address, byteValue) {
     if (address == 0xdc04) {
       return mytimerA.setTimerLow(byteValue);
@@ -131,6 +154,21 @@ oReqChar.send(null);
       return mytimerA.setControlRegister(byteValue);
     } else if (address == 0xdc0f) {
       return mytimerB.setControlRegister(byteValue);
+    } else {
+      mainMem[address] = byteValue;
+    }
+    
+  }
+
+  function cia2Write(address, byteValue) {
+    if (address == 0x4) {
+      return myCIA2timerA.setTimerLow(byteValue);
+    } else if (address == 0x5) {
+      return myCIA2timerA.setTimerHigh(byteValue);
+    } else if (address == 0xd) {
+      return myCIA2interruptController.setInterruptMask(byteValue);
+    } else if (address == 0xe) {
+      return myCIA2timerA.setControlRegister(byteValue);
     } else {
       mainMem[address] = byteValue;
     }
@@ -179,6 +217,8 @@ oReqChar.send(null);
   function IORead(address) {
     if ((address >= 0xdc00) & (address <= 0xdcff)) {
       return ciaRead(address);
+    } else if ((address >= 0xdd00) && (address <= 0xddff) && (address != 0xdd00)) {
+      return cia2Read(address & 0xf);
     } else if ((address >= 0xd000) & (address <= 0xd02e)) {
       return myVideo.readReg(address - 0xd000);
     } else if ((address >= 0xd800) & (address <= 0xdbe8)) {
@@ -191,6 +231,8 @@ oReqChar.send(null);
   function IOWrite(address, value) {
     if ((address >= 0xdc00) & (address <= 0xdcff)) {
       return ciaWrite(address, value);
+    } else if ((address >= 0xdd00) && (address <= 0xddff) & (address != 0xdd00)) {
+      return cia2Write(address & 0xf, value);
     } else if ((address >= 0xd000) & (address <= 0xd02e)) {
       return myVideo.writeReg(address - 0xd000, value);
     } else if ((address >= 0xd800) & (address <= 0xdbe8)) {
@@ -219,6 +261,26 @@ oReqChar.send(null);
       return temp;
     }
     return mainMem[address];
+  }
+
+  this.testStr = function (from, to) {
+    var tempmemstr = "";
+    var fromLocation = (from >> 4) << 4;
+    var toLocation = ((to >> 4) << 4) + 16;
+    for (i = fromLocation; i < (toLocation); i++) {
+      if ((i % 16) == 0) {
+        labelstr = "";
+        labelstr = labelstr + "0000" + i.toString(16);
+        labelstr = labelstr.slice(-4);
+
+       tempmemstr = tempmemstr + "\n" + labelstr;
+      }
+      currentByte = "00" + mymem.readMem(i).toString(16);        
+      currentByte = currentByte.slice(-2);
+      tempmemstr = tempmemstr + " " + currentByte;
+     }
+     return tempmemstr;
+
   }
 
   this.writeMem = function (address, byteval) {

@@ -54,7 +54,11 @@ function timer(alarmManager, InterruptController, timerName) {
 
     continious = ((byteValue & (1 << 3)) == 0) ? true : false;
 
-    isEnabled = ((byteValue & 1) == 1) ? true : false;
+    var tempEnabled = ((byteValue & 1) == 1) ? true : false;
+    if ((tempEnabled != isEnabled) && tempEnabled) {
+      //ticksBeforeExpiry = ticksBeforeExpiry + 2;
+    }
+    isEnabled = tempEnabled;
   
   }
 

@@ -216,10 +216,12 @@ Break at: <input type="text" id="breakpoint">
       var mykeyboard = new keyboard();
       var myAlarmManager = new alarmManager();
       var myInterruptController = new interruptController();
+      var cia2InterruptController = new interruptController();      
       var myTimerA = new timer(myAlarmManager, myInterruptController,"A");
       var myTimerB = new timer(myAlarmManager, myInterruptController, "B");
+      var cia2TimerA = new timer(myAlarmManager, cia2InterruptController,"A");      
       var myTape = new tape(myAlarmManager, myInterruptController);
-      var mymem = new memory(postInit,mykeyboard, myTimerA, myTimerB, myInterruptController, myTape);
+      var mymem = new memory(postInit,mykeyboard, myTimerA, myTimerB, cia2TimerA, myInterruptController, cia2InterruptController, myTape);
       var mycpu = new cpu(mymem);
       myAlarmManager.setCpu(mycpu);
       myInterruptController.setCpu(mycpu);

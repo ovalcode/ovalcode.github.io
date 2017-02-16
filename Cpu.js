@@ -318,6 +318,11 @@ const opCodeDesc =
     address = 0;
     addrStr = "";
     var result = getAsFourDigit(pc);
+    
+    var cycleAsString = "0000000" + cycleCount.toString();
+    cycleAsString = cycleAsString.slice(-7);
+    result = result + " " + cycleAsString;
+
     result = result + " " + opCodeDesc[opCode] + " ";
     switch (mode) {
       case ADDRESS_MODE_ACCUMULATOR: return 0; 
@@ -438,6 +443,7 @@ const opCodeDesc =
       arg2 = localMem.readMem(pc);
       pc = pc + 1;
     }    
+
 
     effectiveAdrress = calculateEffevtiveAdd(addressModes[opcode], arg1, arg2);
 
@@ -871,8 +877,10 @@ break;
      relative      BCC oper      90    2     2** */
 
       case 0x90:
-        if (carryflag == 0)
+        if (carryflag == 0) {
+          cycleCount++;
           pc = effectiveAdrress;
+        }
       break;
 
 
@@ -886,8 +894,10 @@ break;
      relative      BCS oper      B0    2     2** */
 
       case 0xB0:
-        if (carryflag == 1)
+        if (carryflag == 1) {
+          cycleCount++;
           pc = effectiveAdrress;
+        }
       break;
 
 
@@ -901,8 +911,10 @@ break;
      relative      BEQ oper      F0    2     2** */
 
       case 0xF0:
-        if (zeroflag == 1)
+        if (zeroflag == 1) {
+          cycleCount++;
           pc = effectiveAdrress;
+        }
       break;
 
 
@@ -917,8 +929,10 @@ break;
      relative      BMI oper      30    2     2** */
 
       case 0x30:
-        if (negativeflag == 1)
+        if (negativeflag == 1) {
+          cycleCount++;
           pc = effectiveAdrress;
+        }
       break;
 
 
@@ -932,8 +946,10 @@ break;
      relative      BNE oper      D0    2     2**/
 
       case 0xD0:
-        if (zeroflag == 0)
+        if (zeroflag == 0) {
+          cycleCount++;
           pc = effectiveAdrress;
+        }
       break;
 
 
@@ -948,8 +964,10 @@ break;
      relative      BPL oper      10    2     2** */
 
       case 0x10:
-        if (negativeflag == 0)
+        if (negativeflag == 0) {
+          cycleCount++;
           pc = effectiveAdrress;
+        }
       break;
 
 
@@ -964,8 +982,10 @@ break;
      relative      BVC oper      50    2     2** */
 
       case 0x50:
-        if (overflowflag == 0)
+        if (overflowflag == 0) {
+          cycleCount++;
           pc = effectiveAdrress;
+        }
       break;
 
 /*BVS  Branch on Overflow Set
@@ -978,8 +998,10 @@ break;
      relative      BVC oper      70    2     2** */
 
       case 0x70:
-        if (overflowflag == 1)
+        if (overflowflag == 1) {
+          cycleCount++;
           pc = effectiveAdrress;
+        }
       break;
 
 /*JMP  Jump to New Location
