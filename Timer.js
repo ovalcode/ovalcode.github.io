@@ -8,6 +8,11 @@ function timer(alarmManager, InterruptController, timerName) {
   var timerHigh = 255;
   var timerLow = 255;
   var continious = false;
+  var localCPU;
+
+  this.setCPU = function(cpu) {
+    localCPU = cpu;
+  }
  
   this.getIsEnabled = function() {
     return isEnabled;
@@ -41,10 +46,12 @@ function timer(alarmManager, InterruptController, timerName) {
   }
 
   this.getTimerHigh = function() {
-    return (ticksBeforeExpiry >> 8);
+    var tempTicks = ticksBeforeExpiry - localCPU.getLastCPUCycles();
+    return (ticksBeforeExpiry >> 8) & 0xff;
   }
 
   this.getTimerLow = function() {
+    var tempTicks = ticksBeforeExpiry - localCPU.getLastCPUCycles();
     return (ticksBeforeExpiry & 0xff);
   }
 
@@ -56,7 +63,7 @@ function timer(alarmManager, InterruptController, timerName) {
 
     var tempEnabled = ((byteValue & 1) == 1) ? true : false;
     if ((tempEnabled != isEnabled) && tempEnabled) {
-      //ticksBeforeExpiry = ticksBeforeExpiry + 2;
+      ticksBeforeExpiry = ticksBeforeExpiry + 3 + localCPU.getLastCPUCycles();
     }
     isEnabled = tempEnabled;
   

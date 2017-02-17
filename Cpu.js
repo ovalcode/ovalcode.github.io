@@ -100,6 +100,12 @@ const opCodeDesc =
   var myInterruptController;
   var myvideo;
   var allowLogging = false;
+  var crossBoundary = 0;
+  var lastCPUCycles = 0;
+
+  this.getLastCPUCycles = function () {
+    return lastCPUCycles;
+  }
 
   this.setInterruptController = function (interruptController) {
     myInterruptController = interruptController;
@@ -230,6 +236,7 @@ const opCodeDesc =
  function calculateEffevtiveAdd(mode, argbyte1, argbyte2) {
 
     var tempAddress = 0;
+    crossBoundary = 0;
     switch (mode)
     {
       case ADDRESS_MODE_ACCUMULATOR: return 0; 
@@ -238,8 +245,10 @@ const opCodeDesc =
       case ADDRESS_MODE_ABSOLUTE: return (argbyte2 * 256 + argbyte1);
       break;
 
-      case ADDRESS_MODE_ABSOLUTE_X_INDEXED: tempAddress = (argbyte2 * 256 + argbyte1);
-        tempAddress = tempAddress + x;
+      case ADDRESS_MODE_ABSOLUTE_X_INDEXED: 
+        var tempAddressPreIndex = (argbyte2 * 256 + argbyte1);
+        tempAddress = tempAddressPreIndex + x;
+        crossBoundary = (tempAddressPreIndex ^ tempAddress) & 0xff00;
         return tempAddress;
       break;
 
@@ -433,7 +442,8 @@ const opCodeDesc =
     var arg1 = 0;
     var arg2 = 0;
     var effectiveAdrress = 0;
-    cycleCount = cycleCount + instructionCycles[opcode];
+    lastCPUCycles = instructionCycles[opcode];
+    cycleCount = cycleCount + lastCPUCycles;
     if (iLen > 1) {
       arg1 = localMem.readMem(pc);
       pc = pc + 1;
@@ -480,6 +490,8 @@ const opCodeDesc =
         acc = localMem.readMem(effectiveAdrress);
         zeroflag = (acc == 0) ? 1 : 0;
         negativeflag = ((acc & 0x80) != 0) ? 1 : 0;
+        if ((opcode == 0xbd) && crossBoundary)
+          cycleCount++;
       break;
 
 /*LDX  Load Index X with Memory
