@@ -33,8 +33,11 @@ function timer(alarmManager, InterruptController, timerName) {
       myInterruptController.interruptTimerB();
     }
     ticksBeforeExpiry = (timerHigh << 8) | timerLow;
+    //ticksBeforeExpiry = ticksBeforeExpiry + myAlarmManager.getResidue();
     if (!continious)
       isEnabled = false;
+    else
+      ticksBeforeExpiry = ticksBeforeExpiry + myAlarmManager.getResidue()+1;
   }
 
   this.setTimerHigh = function(high) {
@@ -63,7 +66,7 @@ function timer(alarmManager, InterruptController, timerName) {
 
     var tempEnabled = ((byteValue & 1) == 1) ? true : false;
     if ((tempEnabled != isEnabled) && tempEnabled) {
-      ticksBeforeExpiry = ticksBeforeExpiry + 3 + localCPU.getLastCPUCycles();
+      ticksBeforeExpiry = ticksBeforeExpiry + 3 /*+ localCPU.getLastCPUCycles()*/;
     }
     isEnabled = tempEnabled;
   
