@@ -102,6 +102,14 @@ const opCodeDesc =
   var allowLogging = false;
   var crossBoundary = 0;
   var lastCPUCycles = 0;
+  var cia2Timer;
+  var countSteps = false;
+  var numberSteps = 0;
+
+
+  this.setCIA2Timer = function (timer) {
+    cia2Timer = timer;
+  }
 
   this.getLastCPUCycles = function () {
     return lastCPUCycles;
@@ -330,11 +338,11 @@ const opCodeDesc =
     
     var cycleAsString = "0000000" + cycleCount.toString();
     cycleAsString = cycleAsString.slice(-7);
-    result = result + " " + cycleAsString;
+    //result = result + " " + cycleAsString;
 
     result = result + " " + opCodeDesc[opCode] + " ";
     switch (mode) {
-      case ADDRESS_MODE_ACCUMULATOR: return 0; 
+      case ADDRESS_MODE_ACCUMULATOR: return result + "A"; 
       break;
 
       case ADDRESS_MODE_ABSOLUTE: addrStr = getAsFourDigit(argbyte2 * 256 + argbyte1);
@@ -411,18 +419,33 @@ const opCodeDesc =
     var pcstr = "0000" + pc.toString(16); pcstr = pcstr.slice(-4);
     var spstr = "00" + sp.toString(16); spstr = spstr.slice(-2);
     var result = "";
-    result = result + "Acc:" + astr + " X:" + xstr + " Y:" + ystr + "SP: " + spstr +" PC:" + pcstr;
-    result = result + " Z:" + zeroflag.toString();
-    result = result + " N:" + negativeflag.toString();
-    result = result + " C:" + carryflag.toString();
-    result = result + " V:" + overflowflag.toString();
-    result = result + " D:" + decimalflag.toString();
+    result = result + /*"Acc:" +*/ astr + /*" X:" +*/ xstr + /*" Y:" +*/ ystr + /*"SP: " +*/ spstr /*+" PC:" + pcstr*/;
+    //result = result + " Z:" + zeroflag.toString();
+    //result = result + " N:" + negativeflag.toString();
+    //result = result + " C:" + carryflag.toString();
+    //result = result + " V:" + overflowflag.toString();
+    //result = result + " D:" + decimalflag.toString();
     return result;
   }
 
 
   this.step = function () {
-    log_debug(this.getDecodedStr() + "  " + this.getDebugReg());
+    if (pc == 0x4a4)
+      countSteps = true;
+
+    if (countSteps)
+      numberSteps++;
+
+    if (numberSteps > 1530)
+      console.log("hello");
+    var debugStr = this.getDecodedStr();
+    var debugLen = debugStr.length;
+    debugStr = debugStr + "           ";
+    debugStr = debugStr.substring(0,16);
+    debugStr = "."+debugStr.toUpperCase();
+    if (debugLen > 15)
+      debugStr = debugStr + " ";
+    log_debug(debugStr + this.getDebugReg() /*+ " " + cia2Timer.getTimerTicks().toString(16))*/);
     if ((myInterruptController.getCpuInterruptOcurred() | myvideo.vicIntOccured()) & (interruptflag == 0)) {
         interruptOcurred = 0;
         Push(pc >> 8);

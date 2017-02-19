@@ -229,6 +229,7 @@ Break at: <input type="text" id="breakpoint">
       myTimerA.setCPU(mycpu);
       myTimerB.setCPU(mycpu);
       cia2TimerA.setCPU(mycpu);
+      mycpu.setCIA2Timer(cia2TimerA);
 
       var myvideo = new video(document.getElementById("screenBackground"), document.getElementById("spriteBackground"), 
         document.getElementById("screenForeground"), document.getElementById("spriteForefround"), mymem, mycpu);

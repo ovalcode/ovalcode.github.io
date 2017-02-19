@@ -4,6 +4,7 @@ function timer(alarmManager, InterruptController, timerName) {
   var myInterruptController = InterruptController; 
   var isEnabled = false;
   var ticksBeforeExpiry = 0;
+  var targetReloaded = 0;
   myAlarmManager.addAlarm(this);
   var timerHigh = 255;
   var timerLow = 255;
@@ -12,6 +13,10 @@ function timer(alarmManager, InterruptController, timerName) {
 
   this.setCPU = function(cpu) {
     localCPU = cpu;
+  }
+
+  this.getTimerTicks = function() {
+    return ticksBeforeExpiry;
   }
  
   this.getIsEnabled = function() {
@@ -36,8 +41,11 @@ function timer(alarmManager, InterruptController, timerName) {
     //ticksBeforeExpiry = ticksBeforeExpiry + myAlarmManager.getResidue();
     if (!continious)
       isEnabled = false;
-    else
-      ticksBeforeExpiry = ticksBeforeExpiry + myAlarmManager.getResidue()+1;
+    else {
+      targetReloaded = ticksBeforeExpiry + myAlarmManager.getResidue();
+      ticksBeforeExpiry = targetReloaded+1;
+      
+    }
   }
 
   this.setTimerHigh = function(high) {
@@ -49,13 +57,13 @@ function timer(alarmManager, InterruptController, timerName) {
   }
 
   this.getTimerHigh = function() {
-    var tempTicks = ticksBeforeExpiry - localCPU.getLastCPUCycles();
-    return (ticksBeforeExpiry >> 8) & 0xff;
+    var tempTicks = (ticksBeforeExpiry > targetReloaded) ? targetReloaded : ticksBeforeExpiry;
+    return (tempTicks >> 8) & 0xff;
   }
 
   this.getTimerLow = function() {
-    var tempTicks = ticksBeforeExpiry - localCPU.getLastCPUCycles();
-    return (ticksBeforeExpiry & 0xff);
+    var tempTicks = (ticksBeforeExpiry > targetReloaded) ? targetReloaded : ticksBeforeExpiry;
+    return (tempTicks & 0xff);
   }
 
   this.setControlRegister = function (byteValue) {
@@ -67,6 +75,7 @@ function timer(alarmManager, InterruptController, timerName) {
     var tempEnabled = ((byteValue & 1) == 1) ? true : false;
     if ((tempEnabled != isEnabled) && tempEnabled) {
       ticksBeforeExpiry = ticksBeforeExpiry + 3 /*+ localCPU.getLastCPUCycles()*/;
+      targetReloaded = ticksBeforeExpiry;
     }
     isEnabled = tempEnabled;
   
