@@ -42,8 +42,8 @@ function timer(alarmManager, InterruptController, timerName) {
     if (!continious)
       isEnabled = false;
     else {
-      targetReloaded = ticksBeforeExpiry + myAlarmManager.getResidue();
-      ticksBeforeExpiry = targetReloaded+1;
+      targetReloaded = ticksBeforeExpiry/* + myAlarmManager.getResidue()*/;
+      ticksBeforeExpiry = targetReloaded+1 + myAlarmManager.getResidue();
       
     }
   }

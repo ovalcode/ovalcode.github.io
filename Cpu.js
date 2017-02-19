@@ -430,14 +430,14 @@ const opCodeDesc =
 
 
   this.step = function () {
-    if (pc == 0x4a4)
-      countSteps = true;
+    //if (pc == 0x4a4)
+    //  countSteps = true;
 
-    if (countSteps)
-      numberSteps++;
+   // if (countSteps)
+   //   numberSteps++;
 
-    if (numberSteps > 1530)
-      console.log("hello");
+   // if (numberSteps > 1275955)
+   //   console.log("hello");
     var debugStr = this.getDecodedStr();
     var debugLen = debugStr.length;
     debugStr = debugStr + "           ";
@@ -445,7 +445,7 @@ const opCodeDesc =
     debugStr = "."+debugStr.toUpperCase();
     if (debugLen > 15)
       debugStr = debugStr + " ";
-    log_debug(debugStr + this.getDebugReg() /*+ " " + cia2Timer.getTimerTicks().toString(16))*/);
+    log_debug(debugStr + this.getDebugReg() /*+ " " + cia2Timer.getTimerTicks().toString(16)*/);
     if ((myInterruptController.getCpuInterruptOcurred() | myvideo.vicIntOccured()) & (interruptflag == 0)) {
         interruptOcurred = 0;
         Push(pc >> 8);

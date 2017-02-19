@@ -11,7 +11,12 @@ function memory(allDownloadedCallback, keyboard, timerA, timerB, cia2TimerA,
   var myCIA2interruptController = cia2InterruptController;
   var mytape = tape;
   var mainMem = new Uint8Array(65536);
+
+  for (i = 0; i< 65536; i++) {
+    mainMem[i] = (i & 0x40) ? 0xff : 0;
+  }
   mainMem[1] = 0xff;
+
   var IOUnclaimed = new Uint8Array(4096);
   var basicRom = new Uint8Array(8192);
   var kernalRom = new Uint8Array(8192);
@@ -98,9 +103,9 @@ oReqChar.send(null);
 
   function ciaRead(address) {
     if (address == 0xdc00) {
-      return (~keyboardInstance.getJoyStickByte()) & mainMem[address] & 0xff;
+      return (~keyboardInstance.getJoyStickByte()) & IOUnclaimed[address & 0xfff] & 0xff;
     } else if (address == 0xdc01) {
-      return keyboardInstance.getColumnByte(mainMem[0xdc00]);
+      return keyboardInstance.getColumnByte(IOUnclaimed[0xdc00 & 0xfff]);
     } else if (address == 0xdc04) {
       return mytimerA.getTimerLow();
     } else if (address == 0xdc05) {
@@ -116,7 +121,7 @@ oReqChar.send(null);
     } else if (address == 0xdc0f) {
       return mytimerB.getControlRegister();
     } else {
-      return mainMem[address];
+      return IOUnclaimed[address & 0xfff];
     }
 
   }
@@ -134,7 +139,7 @@ oReqChar.send(null);
     } else if (address == 0xe) {
       return myCIA2timerA.getControlRegister();
     } else {
-      return mainMem[address];
+      return IOUnclaimed[address & 0xfff];
     }
 
   }
@@ -155,7 +160,7 @@ oReqChar.send(null);
     } else if (address == 0xdc0f) {
       return mytimerB.setControlRegister(byteValue);
     } else {
-      mainMem[address] = byteValue;
+      IOUnclaimed[address & 0xfff] = byteValue;
     }
     
   }
@@ -170,7 +175,7 @@ oReqChar.send(null);
     } else if (address == 0xe) {
       return myCIA2timerA.setControlRegister(byteValue);
     } else {
-      mainMem[address] = byteValue;
+      IOUnclaimed[address & 0xfff] = byteValue;
     }
     
   }
