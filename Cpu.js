@@ -245,6 +245,7 @@ const opCodeDesc =
 
     var tempAddress = 0;
     crossBoundary = 0;
+    var tempAddressPreIndex = 0;
     switch (mode)
     {
       case ADDRESS_MODE_ACCUMULATOR: return 0; 
@@ -254,7 +255,7 @@ const opCodeDesc =
       break;
 
       case ADDRESS_MODE_ABSOLUTE_X_INDEXED: 
-        var tempAddressPreIndex = (argbyte2 * 256 + argbyte1);
+        tempAddressPreIndex = (argbyte2 * 256 + argbyte1);
         tempAddress = tempAddressPreIndex + x;
         crossBoundary = (tempAddressPreIndex ^ tempAddress) & 0xff00;
         return tempAddress;
@@ -281,8 +282,10 @@ const opCodeDesc =
         return (localMem.readMem(tempAddress + 1) * 256 + localMem.readMem(tempAddress));
       break;
 
-      case ADDRESS_MODE_INDIRECT_Y_INDEXED:
-        tempAddress = localMem.readMem(argbyte1 + 1) * 256 + localMem.readMem(argbyte1) + y;
+      case ADDRESS_MODE_INDIRECT_Y_INDEXED://one to use
+        tempAddressPreIndex = localMem.readMem(argbyte1 + 1) * 256 + localMem.readMem(argbyte1);
+        tempAddress = tempAddressPreIndex + y;
+        crossBoundary = (tempAddressPreIndex ^ tempAddress) & 0xff00;
         return tempAddress;
       break;
 
@@ -433,11 +436,11 @@ const opCodeDesc =
     //if (pc == 0x4a4)
     //  countSteps = true;
 
-   // if (countSteps)
-   //   numberSteps++;
+    //if (countSteps)
+    //  numberSteps++;
 
-   // if (numberSteps > 1275955)
-   //   console.log("hello");
+    //if (numberSteps > 1275955) //-> 1503585 where failing
+    //  numberSteps = numberSteps;
     var debugStr = this.getDecodedStr();
     var debugLen = debugStr.length;
     debugStr = debugStr + "           ";
@@ -513,7 +516,7 @@ const opCodeDesc =
         acc = localMem.readMem(effectiveAdrress);
         zeroflag = (acc == 0) ? 1 : 0;
         negativeflag = ((acc & 0x80) != 0) ? 1 : 0;
-        if ((opcode == 0xbd) && crossBoundary)
+        if (((opcode == 0xbd) | (opcode == 0xb1)) && crossBoundary)
           cycleCount++;
       break;
 
@@ -601,6 +604,8 @@ break;
       case 0x81:
       case 0x91:
         localMem.writeMem(effectiveAdrress, acc);
+        //if ((opcode == 0x91) && crossBoundary)
+        //  cycleCount++;
 
 
 break;
