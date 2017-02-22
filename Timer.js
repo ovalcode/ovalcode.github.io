@@ -1,7 +1,8 @@
 function timer(alarmManager, InterruptController, timerName) {
   var myAlarmManager = alarmManager;
   var myname = timerName;
-  var myInterruptController = InterruptController; 
+  var myInterruptController = InterruptController;
+  var linkedTimer = null; 
   var isEnabled = false;
   var ticksBeforeExpiry = 0;
   var targetReloaded = 0;
@@ -10,9 +11,19 @@ function timer(alarmManager, InterruptController, timerName) {
   var timerLow = 255;
   var continious = false;
   var localCPU;
+  var underflowCountMode = false;
+  var underflowCountingEnabled = false;
 
   this.setCPU = function(cpu) {
     localCPU = cpu;
+  }
+
+  this.getUnderflowCountingEnabled() {
+    return underflowCountingEnabled;
+  }
+
+  this.setLinkedTimer = function (timerToLink) {
+    linkedTimer = timerToLink;
   }
 
   this.getTimerTicks = function() {
@@ -29,6 +40,38 @@ function timer(alarmManager, InterruptController, timerName) {
 
   this.setTicksBeforeExpiry = function(ticks) {
     ticksBeforeExpiry = ticks;
+  }
+
+  this.triggerUnderflowCountEnd = function() {
+    if (myname == "A") {
+      myInterruptController.interruptTimerA();
+    } else {
+      myInterruptController.interruptTimerB();
+    }
+    ticksBeforeExpiry = (timerHigh << 8) | timerLow;
+    //ticksBeforeExpiry = ticksBeforeExpiry + myAlarmManager.getResidue();
+    if (!continious)
+      underflowCountingEnabled = false;
+    else {
+      targetReloaded = ticksBeforeExpiry;
+      ticksBeforeExpiry = targetReloaded+1;      
+    }
+
+  }
+
+  function countUnderFlow() {
+    if (linkedTimer == null)
+      return;
+    if (!linkedTimer.getUnderflowCountingEnabled())
+      return;
+
+    var ticksBeforeExpiry = linkedTimer.getTicksBeforeExpiry() - 1;
+    if (ticksBeforeExpiry > 0) {
+      linkedTimer.setTicksBeforeExpiry(ticksBeforeExpiry);
+    } else {
+      linkedTimer.triggerUnderflowCountEnd();
+    }
+    //linkedTimer.decrement();
   }
 
   this.trigger = function() {
@@ -66,19 +109,46 @@ function timer(alarmManager, InterruptController, timerName) {
     return (tempTicks & 0xff);
   }
 
-  this.setControlRegister = function (byteValue) {
-    if ((byteValue & (1 << 4)) != 0)
-      ticksBeforeExpiry = (timerHigh << 8) | timerLow;
+  function setUnderflowCountMode(byteValue) {
+    if (myname == "A") {
+      underflowCountMode = false;
+      return;
+    }
 
-    continious = ((byteValue & (1 << 3)) == 0) ? true : false;
+    var tempVal = byteValue & 0x60;
+    underflowCountMode = tempval == 0x40;
+  }
 
-    var tempEnabled = ((byteValue & 1) == 1) ? true : false;
+  function setEnabledPhi(enabledBit) {
+    var tempEnabled = (enabledBit) ? true : false;
     if ((tempEnabled != isEnabled) && tempEnabled) {
       ticksBeforeExpiry = ticksBeforeExpiry + 3 /*+ localCPU.getLastCPUCycles()*/;
       targetReloaded = ticksBeforeExpiry;
     }
     isEnabled = tempEnabled;
-  
+  }
+
+  function setEnabledUnderflowCounting(enabledBit) {
+    var tempEnabled = (enabledBit) ? true : false;
+    if ((tempEnabled != underflowCountingEnabled) && tempEnabled) {
+      ticksBeforeExpiry = ticksBeforeExpiry + 3 /*+ localCPU.getLastCPUCycles()*/;
+      targetReloaded = ticksBeforeExpiry;
+    }
+    underflowCountingEnabled = tempEnabled;
+  }
+
+  this.setControlRegister = function (byteValue) {
+    if ((byteValue & (1 << 4)) != 0)
+      ticksBeforeExpiry = (timerHigh << 8) | timerLow;
+
+    continious = ((byteValue & (1 << 3)) == 0) ? true : false;
+    setUnderflowCountMode(byteValue);
+
+    var enabledBit = byteValue & 1;
+    if (!underflowCountMode)
+      setEnabledPhi(enabledBit);
+    else
+      setEnabledUnderflowCounting(enabledBit);
   }
 
   this.getControlRegister = function() {
