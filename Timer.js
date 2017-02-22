@@ -31,7 +31,7 @@ function timer(alarmManager, InterruptController, timerName) {
   }
  
   this.getIsEnabled = function() {
-    return isEnabled;
+    return (!underflowCountMode) & isEnabled;
   }
 
   this.getTicksBeforeExpiry = function() {
