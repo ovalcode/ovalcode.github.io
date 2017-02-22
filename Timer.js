@@ -18,7 +18,7 @@ function timer(alarmManager, InterruptController, timerName) {
     localCPU = cpu;
   }
 
-  this.getUnderflowCountingEnabled() {
+  this.getUnderflowCountingEnabled  = function() {
     return underflowCountingEnabled;
   }
 
@@ -116,7 +116,7 @@ function timer(alarmManager, InterruptController, timerName) {
     }
 
     var tempVal = byteValue & 0x60;
-    underflowCountMode = tempval == 0x40;
+    underflowCountMode = tempVal == 0x40;
   }
 
   function setEnabledPhi(enabledBit) {
