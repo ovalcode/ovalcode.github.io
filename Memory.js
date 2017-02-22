@@ -1,4 +1,4 @@
-function memory(allDownloadedCallback, keyboard, timerA, timerB, cia2TimerA, 
+function memory(allDownloadedCallback, keyboard, timerA, timerB, cia2TimerA, cia2TimerB,
                 interruptController, cia2InterruptController, tape)
 //cia2 -> timer a+interrupt controller in both declaration and global vars
 //create cia2 read+write function
@@ -7,6 +7,7 @@ function memory(allDownloadedCallback, keyboard, timerA, timerB, cia2TimerA,
   var mytimerA = timerA;
   var mytimerB = timerB;
   var myCIA2timerA = cia2TimerA;
+  var myCIA2timerB = cia2TimerB;
   var myinterruptController = interruptController;
   var myCIA2interruptController = cia2InterruptController;
   var mytape = tape;
@@ -134,14 +135,19 @@ oReqChar.send(null);
       return myCIA2timerA.getTimerLow();
     } else if (address == 0x5) {
       return myCIA2timerA.getTimerHigh();
-    } if (address == 0xd) {
+    } else if (address == 0x6) {
+      return myCIA2timerB.getTimerLow();
+    } else if (address == 0x7) {
+      return myCIA2timerB.getTimerHigh();
+    } else if (address == 0xd) {
       return myCIA2interruptController.getInterrupts();
     } else if (address == 0xe) {
       return myCIA2timerA.getControlRegister();
+    } else if (address == 0xf) {
+      return myCIA2timerB.getControlRegister();
     } else {
       return IOUnclaimed[address & 0xfff];
     }
-
   }
 
   function ciaWrite(address, byteValue) {
@@ -170,10 +176,16 @@ oReqChar.send(null);
       return myCIA2timerA.setTimerLow(byteValue);
     } else if (address == 0x5) {
       return myCIA2timerA.setTimerHigh(byteValue);
+    } else if (address == 0x6) {
+      return myCIA2timerB.setTimerLow(byteValue);
+    } else if (address == 0x7) {
+      return myCIA2timerB.setTimerHigh(byteValue);
     } else if (address == 0xd) {
       return myCIA2interruptController.setInterruptMask(byteValue);
     } else if (address == 0xe) {
       return myCIA2timerA.setControlRegister(byteValue);
+    } else if (address == 0xf) {
+      return myCIA2timerB.setControlRegister(byteValue);
     } else {
       IOUnclaimed[address & 0xfff] = byteValue;
     }

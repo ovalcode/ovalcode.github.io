@@ -219,9 +219,13 @@ Break at: <input type="text" id="breakpoint">
       var cia2InterruptController = new interruptController();      
       var myTimerA = new timer(myAlarmManager, myInterruptController,"A");
       var myTimerB = new timer(myAlarmManager, myInterruptController, "B");
-      var cia2TimerA = new timer(myAlarmManager, cia2InterruptController,"A");      
+      myTimerA.setLinkedTimer(myTimerB);
+      var cia2TimerA = new timer(myAlarmManager, cia2InterruptController,"A");   
+      var cia2TimerB = new timer(myAlarmManager, cia2InterruptController,"B");   
+      cia2TimerA.setLinkedTimer(cia2TimerB);
       var myTape = new tape(myAlarmManager, myInterruptController);
-      var mymem = new memory(postInit,mykeyboard, myTimerA, myTimerB, cia2TimerA, myInterruptController, cia2InterruptController, myTape);
+      var mymem = new memory(postInit,mykeyboard, myTimerA, myTimerB, cia2TimerA, cia2TimerB, 
+                             myInterruptController, cia2InterruptController, myTape);
       var mycpu = new cpu(mymem);
       myAlarmManager.setCpu(mycpu);
       myInterruptController.setCpu(mycpu);

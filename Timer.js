@@ -155,8 +155,13 @@ function timer(alarmManager, InterruptController, timerName) {
     var tempValue = 0;
     if (continious)
       tempValue = tempValue | 1 << 3;
-    if (isEnabled)
-      tempValue = tempValue | 1;
+    if (!underflowCountMode) {
+      if (isEnabled)
+        tempValue = tempValue | 1;
+    } else {
+      if (underflowCountingEnabled)
+        tempValue = tempValue | 1;
+    }
     return tempValue;
   }
 
