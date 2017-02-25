@@ -111,6 +111,10 @@ const opCodeDesc =
     cia2Timer = timer;
   }
 
+  this.incCPUCycles = function () {
+    cycleCount++;
+  }
+
   this.getLastCPUCycles = function () {
     return lastCPUCycles;
   }

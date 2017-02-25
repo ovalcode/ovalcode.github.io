@@ -305,7 +305,18 @@ Break at: <input type="text" id="breakpoint">
             stopEm();
             return;
           }
+
           var framefinished = myvideo.processpixels();
+          if (myvideo.isOnBadLine()) {
+            var numberBadCycles = myvideo.getBadLineCycle();
+            var i;
+            for (i = 0; i < numberBadCycles; i++) {
+              mycpu.incCPUCycles();
+              myAlarmManager.processAlarms();
+            }
+            myvideo.resetBadLine();
+          }
+
           if (framefinished)            
             return;
         }

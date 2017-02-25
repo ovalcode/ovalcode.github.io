@@ -4,7 +4,7 @@ function timer(alarmManager, InterruptController, timerName) {
   var myInterruptController = InterruptController;
   var linkedTimer = null; 
   var isEnabled = false;
-  var ticksBeforeExpiry = 0;
+  var ticksBeforeExpiry = 0xffff;
   var targetReloaded = 0;
   myAlarmManager.addAlarm(this);
   var timerHigh = 255;
@@ -100,12 +100,20 @@ function timer(alarmManager, InterruptController, timerName) {
   }
 
   this.getTimerHigh = function() {
-    var tempTicks = (ticksBeforeExpiry > targetReloaded) ? targetReloaded : ticksBeforeExpiry;
+    var tempTicks;
+    if (targetReloaded == 0)
+      tempTicks = ticksBeforeExpiry;
+    else
+      tempTicks = (ticksBeforeExpiry > targetReloaded) ? targetReloaded : ticksBeforeExpiry;
     return (tempTicks >> 8) & 0xff;
   }
 
   this.getTimerLow = function() {
-    var tempTicks = (ticksBeforeExpiry > targetReloaded) ? targetReloaded : ticksBeforeExpiry;
+    var tempTicks;
+    if (targetReloaded == 0)
+      tempTicks = ticksBeforeExpiry;
+    else
+      tempTicks = (ticksBeforeExpiry > targetReloaded) ? targetReloaded : ticksBeforeExpiry;
     return (tempTicks & 0xff);
   }
 

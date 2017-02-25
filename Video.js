@@ -20,7 +20,8 @@ function video(backgroundCanvas, spriteBackgroundCanvas, foregroundCanvas, sprit
   var foregroundData = ctxForeground.createImageData(400, 284);
   var spriteForegroundData = ctxSpriteForeground.createImageData(400, 284);
 
-
+  var onBadLine = false;
+  var badLineCycleCount = 0;
 
   const colors = [[0, 0, 0],
                   [255, 255, 255],
@@ -41,6 +42,18 @@ function video(backgroundCanvas, spriteBackgroundCanvas, foregroundCanvas, sprit
 
   this.getCurrentLine = function() {
     return cycleline;
+  }
+
+  this.isOnBadLine = function() {
+    return onBadLine;
+  }
+
+  this.resetBadLine = function() {
+    onBadLine = false;
+  }
+
+  this.getBadLineCycle = function() {
+    return badLineCycleCount;
   }
 
   this.vicIntOccured = function() {
@@ -102,10 +115,22 @@ function video(backgroundCanvas, spriteBackgroundCanvas, foregroundCanvas, sprit
     return (spriteDataByte0 << 16) | (spriteDataByte1 << 8) | (spriteDataByte2 << 0);
   }
 
+  function isBadLine(lineNumber) {
+    if (!displayEnabled())
+      return false;
+    if ( !((lineNumber > 49) & (lineNumber < (50 + 200))) )
+      return false;
+
+    var lineInScreen = lineNumber - 50;
+    return (!(lineInScreen & 7));
+  }
+
   this.processpixels = function() {
     var numBytes = mycpu.getCycleCount() - cpuCycles;
     cpuCycles = mycpu.getCycleCount();
     var i;
+    var badLine = false;
+    var oldCycleInLine = 0;
     for (i = 0; i < numBytes; i++) {
       if (isVisibleArea() & (numFramesToSkip == 0)) {
         if (isPixelArea() & displayEnabled()) {
@@ -119,8 +144,12 @@ function video(backgroundCanvas, spriteBackgroundCanvas, foregroundCanvas, sprit
       cycleInLine++;
 
       if (cycleInLine > 63) {
+        oldCycleInLine = cycleInLine;        
         cycleInLine = 0;
         cycleline++;
+        if (isBadLine(cycleline)) {
+          badLine = true;
+        }
         if (targetRasterReached() /*& rasterIntEnabled()*/) {
           registers[0x19] = registers[0x19] | 1 | 128;
         }
@@ -144,6 +173,11 @@ function video(backgroundCanvas, spriteBackgroundCanvas, foregroundCanvas, sprit
       }
 
 
+    }
+    if (badLine) {
+      onBadLine = true;
+      badLineCycleCount = 40 + cycleInLine;
+      
     }
       return false;
   }
