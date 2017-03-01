@@ -23,14 +23,23 @@ function tape(alarmManager, interruptManager) {
   this.setMotorOn = function(bit) {
     var oldEnabled = isEnabled;
     isEnabled = (bit == 0) ? true : false;
-    if ((oldEnabled != isEnabled) & isEnabled) {
-      ticksBeforeExpiry = ticksBeforeExpiry + 32000;
-    }
+    //if ((oldEnabled != isEnabled) & isEnabled) {
+    //  ticksBeforeExpiry = ticksBeforeExpiry + 32000;
+    //}
   }
 
   function scheduleNextTrigger() {
-    ticksBeforeExpiry = tapeData[posInTape] << 3;
-    posInTape++;
+    var tapeDataByte0 = tapeData[posInTape];
+    if (tapeDataByte0 == 0) {
+      var tapeDataByte1 = tapeData[posInTape + 1];
+      var tapeDataByte2 = tapeData[posInTape + 2];
+      var tapeDataByte3 = tapeData[posInTape + 3];
+      ticksBeforeExpiry = (tapeDataByte3 << 16) | (tapeDataByte2 << 8) | (tapeDataByte1);
+      posInTape = posInTape + 4;
+    } else {
+      ticksBeforeExpiry = tapeDataByte0 << 3;
+      posInTape++;
+    }
   }
 
   this.getIsEnabled = function() {
