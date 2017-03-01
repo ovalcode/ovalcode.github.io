@@ -21,7 +21,11 @@ function tape(alarmManager, interruptManager) {
   }
 
   this.setMotorOn = function(bit) {
+    var oldEnabled = isEnabled;
     isEnabled = (bit == 0) ? true : false;
+    if ((oldEnabled != isEnabled) & isEnabled) {
+      ticksBeforeExpiry = ticksBeforeExpiry + 32000;
+    }
   }
 
   function scheduleNextTrigger() {

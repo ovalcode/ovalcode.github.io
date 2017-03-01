@@ -89,6 +89,8 @@ function timer(alarmManager, InterruptController, timerName) {
       ticksBeforeExpiry = targetReloaded+1 + myAlarmManager.getResidue();
       
     }
+
+    countUnderFlow();
   }
 
   this.setTimerHigh = function(high) {
@@ -139,7 +141,7 @@ function timer(alarmManager, InterruptController, timerName) {
   function setEnabledUnderflowCounting(enabledBit) {
     var tempEnabled = (enabledBit) ? true : false;
     if ((tempEnabled != underflowCountingEnabled) && tempEnabled) {
-      ticksBeforeExpiry = ticksBeforeExpiry + 3 /*+ localCPU.getLastCPUCycles()*/;
+      ticksBeforeExpiry = ticksBeforeExpiry /*+ 3 + localCPU.getLastCPUCycles()*/;
       targetReloaded = ticksBeforeExpiry;
     }
     underflowCountingEnabled = tempEnabled;
