@@ -22,6 +22,7 @@ function video(backgroundCanvas, spriteBackgroundCanvas, foregroundCanvas, sprit
 
   var onBadLine = false;
   var badLineCycleCount = 0;
+  var cyclesPrevFrame = 0;
 
   const colors = [[0, 0, 0],
                   [255, 255, 255],
@@ -131,6 +132,8 @@ function video(backgroundCanvas, spriteBackgroundCanvas, foregroundCanvas, sprit
 
   this.processpixels = function() {
     var numBytes = mycpu.getCycleCount() - cpuCycles;
+    numBytes = numBytes + cyclesPrevFrame;
+    cyclesPrevFrame = 0;
     cpuCycles = mycpu.getCycleCount();
     var i;
     var badLine = false;
@@ -147,7 +150,7 @@ function video(backgroundCanvas, spriteBackgroundCanvas, foregroundCanvas, sprit
 
       cycleInLine++;
 
-      if (cycleInLine > 63) {
+      if (cycleInLine > 62) {
         oldCycleInLine = cycleInLine;        
         cycleInLine = 0;
         cycleline++;
@@ -173,6 +176,7 @@ function video(backgroundCanvas, spriteBackgroundCanvas, foregroundCanvas, sprit
         posInCanvas = 0;
         charPosInMem = 0;
         //imgData = ctx.createImageData(400, 284);
+        cyclesPrevFrame = numBytes - i - 1;
         return true;
       }
 

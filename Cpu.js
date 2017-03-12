@@ -347,8 +347,8 @@ const opCodeDesc =
     addrStr = "";
     var result = getAsFourDigit(pc);
     
-    var cycleAsString = "0000000" + cycleCount.toString();
-    cycleAsString = cycleAsString.slice(-7);
+    var cycleAsString = "00000000" + cycleCount.toString();
+    cycleAsString = cycleAsString.slice(-8);
     result = result + " " + cycleAsString;
 
     result = result + " " + opCodeDesc[opCode] + " ";
