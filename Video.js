@@ -48,6 +48,10 @@ function video(backgroundCanvas, spriteBackgroundCanvas, foregroundCanvas, sprit
     return onBadLine;
   }
 
+  this.getCycleInLine = function() {
+    return cycleInLine;
+  }
+
   this.resetBadLine = function() {
     onBadLine = false;
   }

@@ -270,6 +270,30 @@ Break at: <input type="text" id="breakpoint">
         m.value = tempmemstr;
 
       }
+
+      function logState() {
+        if (!mycpu.getAllowLogging())
+          return;
+        var rasterLineStr = "000" + myvideo.getCurrentLine().toString();
+        var cycleInRasterStr = "000" + myvideo.getCycleInLine().toString();
+        rasterLineStr = rasterLineStr.slice(-3);
+        cycleInRasterStr = cycleInRasterStr.slice(-3);
+        var fullDebugStr = mycpu.getFullDebugString();
+        var pcAddressStr = fullDebugStr.substring(0,5);
+        var finalString = fullDebugStr.substring(6,35);
+        console.log(pcAddressStr + " " + rasterLineStr + " " + cycleInRasterStr + " " + finalString);
+//ff.substring(6,35) -> part after address
+//ff.substring(0,5) -> address
+        //get current pc
+        //raster line count
+        //cpu.getCycleCount
+        //raster
+//getCurrentLine -> video
+//getCycleInLine
+        //.034A 288 027   65020563  A9 2C       LDA #$2C   c91200ec
+
+      }
+
       function runBatch() {
         if (!running)
           return;
@@ -290,7 +314,8 @@ Break at: <input type="text" id="breakpoint">
         myvideo.initForNextFrame();
         //myvideo.updateCanvas();
         //var targetCycleCount =  mycpu.getCycleCount() + 20000;
-        while (true) { 
+        while (true) {
+          logState(); 
           mycpu.step();
           myAlarmManager.processAlarms();
           //if (mycpu.getCycleCount() > 6000000)            

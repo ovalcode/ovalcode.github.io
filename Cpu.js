@@ -148,6 +148,10 @@ const opCodeDesc =
     allowLogging = flag;
   }
 
+  this.getAllowLogging = function() {
+    return allowLogging;
+  }
+
   function log_debug(value) {
     if (allowLogging) {
       console.log(value);
@@ -435,6 +439,18 @@ const opCodeDesc =
     return result;
   }
 
+  this.getFullDebugString = function() {
+    var debugStr = this.getDecodedStr();
+    var debugLen = debugStr.length;
+    debugStr = debugStr + "           ";
+    debugStr = debugStr.substring(0,23);
+    debugStr = "."+debugStr.toUpperCase();
+    if (debugLen > 15)
+      debugStr = debugStr + " ";
+    debugStr = debugStr + this.getDebugReg();
+    return debugStr;
+  }
+
 
   this.step = function () {
     //if (pc == 0x4a4)
@@ -445,14 +461,14 @@ const opCodeDesc =
 
     //if (numberSteps > 1275955) //-> 1503585 where failing
     //  numberSteps = numberSteps;
-    var debugStr = this.getDecodedStr();
-    var debugLen = debugStr.length;
-    debugStr = debugStr + "           ";
-    debugStr = debugStr.substring(0,23);
-    debugStr = "."+debugStr.toUpperCase();
-    if (debugLen > 15)
-      debugStr = debugStr + " ";
-    log_debug(debugStr + this.getDebugReg() /*+ " " + cia2Timer.getTimerTicks().toString(16)*/);
+    //var debugStr = this.getDecodedStr();
+    //var debugLen = debugStr.length;
+    //debugStr = debugStr + "           ";
+    //debugStr = debugStr.substring(0,23);
+    //debugStr = "."+debugStr.toUpperCase();
+    //if (debugLen > 15)
+    //  debugStr = debugStr + " ";
+    //log_debug(debugStr + this.getDebugReg() /*+ " " + cia2Timer.getTimerTicks().toString(16)*/);
     if ((myInterruptController.getCpuInterruptOcurred() | myvideo.vicIntOccured()) & (interruptflag == 0)) {
         interruptOcurred = 0;
         Push(pc >> 8);
