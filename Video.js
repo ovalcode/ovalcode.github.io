@@ -176,7 +176,7 @@ function video(backgroundCanvas, spriteBackgroundCanvas, foregroundCanvas, sprit
     }
     if (badLine) {
       onBadLine = true;
-      badLineCycleCount = 40 + cycleInLine;
+      badLineCycleCount = 43;
       
     }
       return false;

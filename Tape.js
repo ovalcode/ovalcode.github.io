@@ -4,7 +4,10 @@ function tape(alarmManager, interruptManager) {
   var tapeData;
   var posInTape;
   var isEnabled = false;
+  var stopping = false;
+  var cyclesBeforeStopped = 0;
   var ticksBeforeExpiry = 0;
+  var lastScheduledTicks = 0;
   myAlarmManager.addAlarm(this);
 
   this.attachTape = function(file) {
@@ -22,10 +25,18 @@ function tape(alarmManager, interruptManager) {
 
   this.setMotorOn = function(bit) {
     var oldEnabled = isEnabled;
-    isEnabled = (bit == 0) ? true : false;
-    //if ((oldEnabled != isEnabled) & isEnabled) {
-    //  ticksBeforeExpiry = ticksBeforeExpiry + 32000;
-    //}
+    var tempEnabled = (bit == 0) ? true : false;
+    var stateChanged = oldEnabled != tempEnabled;
+    if (stateChanged) {
+      if (tempEnabled) {
+        ticksBeforeExpiry = ticksBeforeExpiry + 32000;
+        isEnabled = true;  
+      } else {
+        stopping = true;
+        cycledBeforeStopped = 32000;
+      }
+    }
+
   }
 
   function scheduleNextTrigger() {
@@ -40,6 +51,8 @@ function tape(alarmManager, interruptManager) {
       ticksBeforeExpiry = tapeDataByte0 << 3;
       posInTape++;
     }
+    ticksBeforeExpiry = ticksBeforeExpiry + myAlarmManager.getResidue();
+    lastScheduledTicks = ticksBeforeExpiry;
   }
 
   this.getIsEnabled = function() {
@@ -51,10 +64,20 @@ function tape(alarmManager, interruptManager) {
   }
 
   this.setTicksBeforeExpiry = function(ticks) {
+    var oldTicks = ticksBeforeExpiry;
+    if (stopping) {
+      cycledBeforeStopped = cycledBeforeStopped - (oldTicks - ticks);
+      if (cycledBeforeStopped <= 0) {
+        isEnabled = false;
+        stopping = false;
+      }
+    }
+
     ticksBeforeExpiry = ticks;
   }
 
   this.trigger = function() {
+    console.log("Tape triggered "+posInTape);
     myInterruptManager.interruptFlag1();
     scheduleNextTrigger();
   }

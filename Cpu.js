@@ -345,7 +345,7 @@ const opCodeDesc =
     
     var cycleAsString = "0000000" + cycleCount.toString();
     cycleAsString = cycleAsString.slice(-7);
-    //result = result + " " + cycleAsString;
+    result = result + " " + cycleAsString;
 
     result = result + " " + opCodeDesc[opCode] + " ";
     switch (mode) {
@@ -448,7 +448,7 @@ const opCodeDesc =
     var debugStr = this.getDecodedStr();
     var debugLen = debugStr.length;
     debugStr = debugStr + "           ";
-    debugStr = debugStr.substring(0,16);
+    debugStr = debugStr.substring(0,23);
     debugStr = "."+debugStr.toUpperCase();
     if (debugLen > 15)
       debugStr = debugStr + " ";
