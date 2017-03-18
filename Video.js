@@ -23,6 +23,7 @@ function video(backgroundCanvas, spriteBackgroundCanvas, foregroundCanvas, sprit
   var onBadLine = false;
   var badLineCycleCount = 0;
   var cyclesPrevFrame = 0;
+  var legibleForBadLineTest = true;
 
   const colors = [[0, 0, 0],
                   [255, 255, 255],
@@ -54,6 +55,17 @@ function video(backgroundCanvas, spriteBackgroundCanvas, foregroundCanvas, sprit
   }
 
   this.resetBadLine = function() {
+    //compare/remove with git before applying chanhes
+    //mark current line as not legable for bad line check
+    //when next line cancel legable
+    //for code below only do if legable
+    //remove upper range checking for isbadline
+/*
+      if (isBadLine(cycleline, cycleInLine) && !oldBadLine) {
+        badLine = true;
+      }
+
+*/
     onBadLine = false;
   }
 
@@ -120,14 +132,14 @@ function video(backgroundCanvas, spriteBackgroundCanvas, foregroundCanvas, sprit
     return (spriteDataByte0 << 16) | (spriteDataByte1 << 8) | (spriteDataByte2 << 0);
   }
 
-  function isBadLine(lineNumber) {
+  function isBadLine(lineNumber, cInLine) {
     if (!displayEnabled())
       return false;
-    if ( !((lineNumber > 49) & (lineNumber < (50 + 200))) )
+    if ( !((lineNumber > 50) & (lineNumber < (50 + 200))) )
       return false;
 
-    var lineInScreen = lineNumber - 50;
-    return (!(lineInScreen & 7));
+    var lineInScreen = lineNumber - 51;
+    return (!(lineInScreen & 7) && (cInLine > 10));
   }
 
   this.processpixels = function() {
@@ -150,13 +162,16 @@ function video(backgroundCanvas, spriteBackgroundCanvas, foregroundCanvas, sprit
 
       cycleInLine++;
 
+      if (isBadLine(cycleline, cycleInLine) && legibleForBadLineTest) {
+        badLine = true;
+      }
+
+
       if (cycleInLine > 62) {
         oldCycleInLine = cycleInLine;        
         cycleInLine = 0;
         cycleline++;
-        if (isBadLine(cycleline)) {
-          badLine = true;
-        }
+        legibleForBadLineTest = true;
         if (targetRasterReached() /*& rasterIntEnabled()*/) {
           registers[0x19] = registers[0x19] | 1 | 128;
         }
@@ -185,7 +200,17 @@ function video(backgroundCanvas, spriteBackgroundCanvas, foregroundCanvas, sprit
     if (badLine) {
       onBadLine = true;
       badLineCycleCount = 43;
-      
+      var fetchClock = mycpu.getCycleCount() - (cycleInLine - 11);
+      var sub = 0;
+      mycpu.processWriteCycles();
+      if (fetchClock < mycpu.getFirstWriteCycle() || fetchClock > mycpu.getLastWriteCycle()) {
+          sub = 0;
+      } else {
+          sub = mycpu.getLastWriteCycle() - fetchClock + 1;
+      }
+
+      badLineCycleCount = badLineCycleCount - sub;
+      legibleForBadLineTest = false;
     }
       return false;
   }

@@ -64,6 +64,29 @@ const instructionCycles = [7, 6, 0, 0, 0, 3, 5, 0, 3, 2, 2, 0, 0, 4, 6, 0,
 2, 6, 0, 0, 3, 3, 5, 0, 2, 2, 2, 0, 4, 4, 6, 0, 
 2, 5, 0, 0, 0, 4, 6, 0, 2, 4, 0, 0, 0, 4, 7, 0];
 
+const maincpu_opcode_write_cycles = [
+            /* 0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F */
+    /* $00 */  3, 0, 0, 2, 0, 0, 2, 2, 1, 0, 0, 0, 0, 0, 2, 2, /* $00 */
+    /* $10 */  0, 0, 0, 2, 0, 0, 2, 2, 0, 0, 0, 2, 0, 0, 2, 2, /* $10 */
+    /* $20 */  2, 0, 0, 2, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 2, 2, /* $20 */
+    /* $30 */  0, 0, 0, 2, 0, 0, 2, 2, 0, 0, 0, 2, 0, 0, 2, 2, /* $30 */
+    /* $40 */  0, 0, 0, 2, 0, 0, 2, 2, 1, 0, 0, 0, 0, 0, 2, 2, /* $40 */
+    /* $50 */  0, 0, 0, 2, 0, 0, 2, 2, 0, 0, 0, 2, 0, 0, 2, 2, /* $50 */
+    /* $60 */  0, 0, 0, 2, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 2, 2, /* $60 */
+    /* $70 */  0, 0, 0, 2, 0, 0, 2, 2, 0, 0, 0, 2, 0, 0, 2, 2, /* $70 */
+    /* $80 */  0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, /* $80 */
+    /* $90 */  0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, /* $90 */
+    /* $A0 */  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /* $A0 */
+    /* $B0 */  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /* $B0 */
+    /* $C0 */  0, 0, 0, 2, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 2, 2, /* $C0 */
+    /* $D0 */  0, 0, 0, 2, 0, 0, 2, 2, 0, 0, 0, 2, 0, 0, 2, 2, /* $D0 */
+    /* $E0 */  0, 0, 0, 2, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 2, 2, /* $E0 */
+    /* $F0 */  0, 0, 0, 2, 0, 0, 2, 2, 0, 0, 0, 2, 0, 0, 2, 2  /* $F0 */
+            /* 0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F */
+];
+
+
+
 const opCodeDesc = 
 ["BRK", "ORA", "", "", "", "ORA", "ASL", "", "PHP", "ORA", "ASL", "", "", "ORA", "ASL", "", 
 "BPL", "ORA", "", "", "", "ORA", "ASL", "", "CLC", "ORA", "", "", "", "ORA", "ASL", "", 
@@ -105,6 +128,9 @@ const opCodeDesc =
   var cia2Timer;
   var countSteps = false;
   var numberSteps = 0;
+  var lastOpcode = 0;
+  var last_opcode_first_write_clk = 0;
+  var last_opcode_last_write_clk = 0;
 
 
   this.setCIA2Timer = function (timer) {
@@ -451,6 +477,40 @@ const opCodeDesc =
     return debugStr;
   }
 
+this.getLastWriteCycle = function() {
+  return last_opcode_last_write_clk;
+}
+
+this.getFirstWriteCycle = function () {
+  return last_opcode_first_write_clk;
+}
+
+this.processWriteCycles = function() {
+
+        switch (lastOpcode) {
+            case 0:
+                last_opcode_first_write_clk = cycleCount - 5;
+                last_opcode_last_write_clk = cycleCount - 3;
+                break;
+
+            case 0x20:
+                last_opcode_first_write_clk = cycleCount - 3;
+                last_opcode_last_write_clk = cycleCount - 2;
+                break;
+
+            default:
+                if (maincpu_opcode_write_cycles[lastOpcode] != 0) {
+                    last_opcode_last_write_clk = cycleCount - 1;
+                    last_opcode_first_write_clk = cycleCount
+                                                  - maincpu_opcode_write_cycles[lastOpcode];
+                } else {
+                    last_opcode_first_write_clk = 0;
+                    last_opcode_last_write_clk = last_opcode_first_write_clk;
+                }
+                break;
+        }
+}
+
 
   this.step = function () {
     //if (pc == 0x4a4)
@@ -483,6 +543,7 @@ const opCodeDesc =
     }
 
     var opcode = localMem.readMem(pc);
+    lastOpcode = opcode;
     pc = pc + 1;
     var iLen = instructionLengths[opcode];
     var arg1 = 0;
