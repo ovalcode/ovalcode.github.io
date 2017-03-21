@@ -76,6 +76,20 @@ function tape(alarmManager, interruptManager) {
     ticksBeforeExpiry = ticks;
   }
 
+  this.processTapeInterrupts = function() {
+    if (!isEnabled) {
+      return;
+    }
+
+    if ((ticksBeforeExpiry - 3) <= 0) {
+      myInterruptManager.interruptFlag1();
+    }
+  }
+
+  this.decTape = function() {
+    ticksBeforeExpiry = ticksBeforeExpiry + 1;
+  }
+
   this.trigger = function() {
     console.log("Tape triggered "+posInTape);
     myInterruptManager.interruptFlag1();

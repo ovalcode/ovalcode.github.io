@@ -119,6 +119,14 @@ function timer(alarmManager, InterruptController, timerName) {
     return (tempTicks & 0xff);
   }
 
+  this.isTimerAstartedCounting = function() {
+    return ticksBeforeExpiry < targetReloaded;
+  }
+
+  this.getUnderflowCountMode = function() {
+    return underflowCountMode;
+  }
+
   function setUnderflowCountMode(byteValue) {
     if (myname == "A") {
       underflowCountMode = false;

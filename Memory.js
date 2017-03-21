@@ -116,6 +116,7 @@ oReqChar.send(null);
     } else if (address == 0xdc07) {
       return mytimerB.getTimerHigh();
     } else if (address == 0xdc0d) {
+      //mytape.processTapeInterrupts();
       return myinterruptController.getInterrupts();
     } else if (address == 0xdc0e) {
       return mytimerA.getControlRegister();
@@ -136,7 +137,14 @@ oReqChar.send(null);
     } else if (address == 0x5) {
       return myCIA2timerA.getTimerHigh();
     } else if (address == 0x6) {
-      return myCIA2timerB.getTimerLow();
+      console.log("Timer A: " + myCIA2timerA.getTimerLow());
+      var countTimerAunderflow = myCIA2timerB.getUnderflowCountMode();
+      var countBOffset = 0;
+      if (countTimerAunderflow && !myCIA2timerA.isTimerAstartedCounting()) {
+        countBOffset = 1;
+      }
+
+      return myCIA2timerB.getTimerLow() + countBOffset;
     } else if (address == 0x7) {
       return myCIA2timerB.getTimerHigh();
     } else if (address == 0xd) {
