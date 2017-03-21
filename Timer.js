@@ -66,7 +66,7 @@ function timer(alarmManager, InterruptController, timerName) {
       return;
 
     var ticksBeforeExpiry = linkedTimer.getTicksBeforeExpiry() - 1;
-    if (ticksBeforeExpiry > 0) {
+    if (ticksBeforeExpiry >= 0) {
       linkedTimer.setTicksBeforeExpiry(ticksBeforeExpiry);
     } else {
       linkedTimer.triggerUnderflowCountEnd();
