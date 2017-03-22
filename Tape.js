@@ -29,11 +29,11 @@ function tape(alarmManager, interruptManager) {
     var stateChanged = oldEnabled != tempEnabled;
     if (stateChanged) {
       if (tempEnabled) {
-        ticksBeforeExpiry = ticksBeforeExpiry + 32000;
+        ticksBeforeExpiry = ticksBeforeExpiry + 20000;
         isEnabled = true;  
       } else {
         stopping = true;
-        cycledBeforeStopped = 32000;
+        cycledBeforeStopped = 20000;
       }
     }
 

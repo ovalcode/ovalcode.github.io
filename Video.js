@@ -24,6 +24,7 @@ function video(backgroundCanvas, spriteBackgroundCanvas, foregroundCanvas, sprit
   var badLineCycleCount = 0;
   var cyclesPrevFrame = 0;
   var legibleForBadLineTest = true;
+  var displayEnabledVar = false;
 
   const colors = [[0, 0, 0],
                   [255, 255, 255],
@@ -160,6 +161,12 @@ function video(backgroundCanvas, spriteBackgroundCanvas, foregroundCanvas, sprit
         }
       }
 
+      if (cycleline == 47) {
+        displayEnabledVar = false;
+      } else if ((cycleline == 48) && !displayEnabledVar) {
+        displayEnabledVar = (registers[0x11] & 0x10) != 0;
+      }
+
       cycleInLine++;
 
       if (isBadLine(cycleline, cycleInLine) && legibleForBadLineTest) {
@@ -228,7 +235,7 @@ function video(backgroundCanvas, spriteBackgroundCanvas, foregroundCanvas, sprit
   }
 
   function displayEnabled() {
-    return ((registers[0x11] & 0x10) != 0)
+    return displayEnabledVar;//((registers[0x11] & 0x10) != 0)
   }
 
   function updateCharPos() {
